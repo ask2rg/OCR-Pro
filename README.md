@@ -39,8 +39,9 @@ Let's Try: [OCR Pro For Mobile](https://script.google.com/macros/s/AKfycbwhRwo7T
 ### Possible to Select the Specific Language ###
 Google will automatically detect the language of the document. For example, if you upload an image to OCR, Google automatically finds the language of the content of that image. If the image contains text in multiple languages, Google detects all the languages and extract text automatically.
 
-Sometimes Google is not able to detect the correct language nor allow you to select the language for OCR. The OCR Pro makes it possible to choose a specific language if Google is not detecting the accurate language.
--Use this [Sample image](https://1.bp.blogspot.com/-1vyiTjYCOBA/Wk333v6D-JI/AAAAAAAAD6I/p8sIBv_zCSsSOyq9uIn5HyYxpCXHXpViACLcBGAs/s1600/CbSEJEWDEKyEyQ374etTVU5g.jpg) to test the difference before or after choose the language.-
+Sometimes Google is not able to detect the correct language nor allow you to select the language for OCR. The **OCR Pro makes it possible to choose a specific language** if Google is not detecting the accurate language.
+
+*Use this [Sample image](https://1.bp.blogspot.com/-1vyiTjYCOBA/Wk333v6D-JI/AAAAAAAAD6I/p8sIBv_zCSsSOyq9uIn5HyYxpCXHXpViACLcBGAs/s1600/CbSEJEWDEKyEyQ374etTVU5g.jpg) to test the difference before or after choose the language.*
 
 
 
