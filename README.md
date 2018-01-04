@@ -5,7 +5,7 @@ OCR pro is a Free web application written in Google Apps Script, to Convert PDF 
 
 ## About
 
-![OCR Pro](https://1.bp.blogspot.com/-05BZrvdXI-A/WkZs5LhHndI/AAAAAAAAAB8/YNwjoE5aS5U60yKJrfc867KRsFiRvCQbwCLcBGAs/s252/OCR-Pro.png "OCR Pro logo")
+![OCR Pro](https://3.bp.blogspot.com/-4bkueQBpnPg/Wk36qT4907I/AAAAAAAAD6g/sm21DExqLJonbFFR-UYJsB-9-5-7_S97gCLcBGAs/s1600/OCR%2BPro%2B-%2BDesktop.png "OCR Pro - Desktop App with Language option")
 
 Optical Character Recognition (OCR), a tool that lets you easily copy text from picture, scanned documents, printed books, etc. We can convert hardcopy document into editable digital document and avoid the retyping of a document.
 
