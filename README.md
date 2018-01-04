@@ -56,5 +56,9 @@ There are a few Tips to produce optimal results from OCR
 
 - **Click Advanced Options and choose language**, don't select "Multi-Language" or "Auto Detection" unless you do not need for it.
 
-- 
+- Rotate Image for Proper Orientation - horizontal and reads from left to right.
+
+- Image quality will be Sharp and clear with white page
+
+- Make sure your file is in JPEG, PNG, GIF or PDF format and file is **2 MB or less**
 
