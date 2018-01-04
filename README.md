@@ -13,7 +13,7 @@ You can simply capture a picture of the printed text with your mobile phone, use
 
 
 
-##How does it work?
+## How does it work?
 
 The script use [Google OCR Technology](https://support.google.com/drive/answer/176692), as you know you can convert image files to text with Google Drive, uploade file to Google Drive and then Open file with Google Docs. It does use same concept and automate the whole process.
 
