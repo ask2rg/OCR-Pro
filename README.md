@@ -44,5 +44,17 @@ Sometimes Google is not able to detect the correct language nor allow you to sel
 *Use this [Sample image](https://1.bp.blogspot.com/-1vyiTjYCOBA/Wk333v6D-JI/AAAAAAAAD6I/p8sIBv_zCSsSOyq9uIn5HyYxpCXHXpViACLcBGAs/s1600/CbSEJEWDEKyEyQ374etTVU5g.jpg) to test the difference before or after choose the language.*
 
 
+# 
 
+## *Pro Tips*
+
+There are a few Tips to produce optimal results from OCR
+
+- **Use CamScanner or other similar apps** to Scan Documents and should **save file as image** only (Not in PDF)
+
+- If you want to convert Scanned PDF, Firstly **convert PDF into multiple Image**. Because Images provide the most efficient and impressive results.
+
+- **Click Advanced Options and choose language**, don't select "Multi-Language" or "Auto Detection" unless you do not need for it.
+
+- 
 
