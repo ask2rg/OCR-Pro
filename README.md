@@ -62,3 +62,8 @@ There are a few Tips to produce optimal results from OCR
 
 - Make sure your file is in JPEG, PNG, GIF or PDF format and file is **2 MB or less**
 
+#
+#
+
+### [OCR Pro - Desktop](https://script.google.com/macros/s/AKfycbwhRwo7Toqs-JIP7wVZKr0aG3y9L-roo2q_LsLWjfShNLAMTn8/exec)
+### [OCR Pro - Mobile(https://script.google.com/macros/s/AKfycbwpLKxX8PQKlCxp21FyWMj83SpWFAsCFvsYpYgAn4TeeDf2z-x6/exec)
