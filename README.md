@@ -40,7 +40,7 @@ Let's Try: [GoOCR Pro For Mobile](https://goocr.blogspot.com/?p=App&app=mobile&u
 
 
 ### Connect to web ###
-![GoOCR - Connect to web](https://1.bp.blogspot.com/-2q8cjH9eCmc/YDazwGNDwVI/AAAAAAAACyc/tVchCN0SorwN3SfYWIgAf-ZsONXdS2tHgCLcBGAsYHQ/s1576/goocrwc.PNG" GoOCR - Desktop App with Connect to web")
+![GoOCR - Connect to web](https://1.bp.blogspot.com/-2q8cjH9eCmc/YDazwGNDwVI/AAAAAAAACyc/tVchCN0SorwN3SfYWIgAf-ZsONXdS2tHgCLcBGAsYHQ/s1576/goocrwc.PNG " GoOCR - Desktop App with Connect to web")
 Connect your mobile to take photos or upload files, and get editable text on your PC.
 
 A large number of OCR apps are available for desktop and mobile. But I could not find any app that provides "connect to web" feature. "Connect to the web" is a feature that allows you to connect your phone to a computer so that you can input from mobile and get output on your computer screen. With GoOCR you can use your phone as a portable OCR scanner for computer.
@@ -75,5 +75,5 @@ There are a few Tips to produce optimal results from OCR
 ###
 #
 
-### [OCR Pro - Desktop](https://script.google.com/macros/s/AKfycbwhRwo7Toqs-JIP7wVZKr0aG3y9L-roo2q_LsLWjfShNLAMTn8/exec)
-### [OCR Pro - Mobile](https://script.google.com/macros/s/AKfycbwpLKxX8PQKlCxp21FyWMj83SpWFAsCFvsYpYgAn4TeeDf2z-x6/exec)
+### [GoOCR Pro - Desktop](https://goocr.blogspot.com/?p=App&app=desktop&utm_source=OCRpro(github)-File&utm_medium=OcrproWeb&utm_campaign=redNewApp)
+### [GoOCR Pro - Mobile](https://goocr.blogspot.com/?p=App&app=mobile&utm_source=OCRpro(github)-File&utm_medium=OcrproWeb&utm_campaign=redNewApp)
