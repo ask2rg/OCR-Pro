@@ -1,3 +1,5 @@
+## [Live Demo](https://goocr.blogspot.com)
+
 # OCR-Pro
 OCR pro is a Free web application written in Google Apps Script, to Convert PDF and photo files to text. OCR pro use Google Drive's OCR technology Website:  http://ocrpro.blogspot.in/
 
@@ -17,7 +19,7 @@ You can simply capture a picture of the printed text with your mobile phone, use
 
 ## How does it work?
 
-The script use [Google OCR Technology](https://support.google.com/drive/answer/176692), as you know you can convert image files to text with Google Drive, uploade file to Google Drive and then Open file with Google Docs. It does use same concept and automate the whole process.
+The script use Google's OCR Technology, as you know you can [convert image files to text with Google Drive](https://support.google.com/drive/answer/176692), uploade file to Google Drive and then Open file with Google Docs. It does use same concept and automate the whole process.
 
 Collect image or PDF file from the user, Upload file to my Google Drive and then Create .doc file using Input-Image-File with enabling OCR option. Once the DOC file creates, the script will copy all text inside doc file and provide it as an output. At last, it will delete both image and DOC file, all tasks will be done by Google App Script.
 
@@ -32,10 +34,15 @@ The OCR pro is free OCR tool and uses Google OCR Technology to perform OCR proce
 
 
 ### Use Google OCR on your Mobile Phone ###
-Currently Google OCR feature is only available for desktop computers and not on mobile devices and tablets. OCR Pro a free online tool that lets you use Google OCR feature on your android, iphone and ipad device.
+Currently [Google Drive OCR feature](https://support.google.com/drive/answer/176692) is only available for desktop computers and not on mobile devices and tablets. OCR Pro a free online tool that lets you use Google OCR feature on your android, iphone and ipad device.
 
 Let's Try: [GoOCR Pro For Mobile](https://goocr.blogspot.com/?p=App&app=mobile&utm_source=OCRpro(github)-File&utm_medium=OcrproWeb&utm_campaign=redNewApp)
 
+
+### Connect to web ###
+Connect your mobile to take photos or upload files, and get editable text on your PC.
+
+A large number of OCR apps are available for desktop and mobile. But I could not find any app that provides "connect to web" feature. "Connect to the web" is a feature that allows you to connect your phone to a computer so that you can input from mobile and get output on your computer screen. With GoOCR you can use your phone as a portable OCR scanner for computer.
 
 
 ### Possible to Select the Specific Language ###
