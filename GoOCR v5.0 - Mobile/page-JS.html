@@ -1,0 +1,745 @@
+﻿  
+
+    <script>
+    
+        var startTime, endTime;
+        var fileUploadTimeSec, fileConversionTimeSec, convertTimeStart, finalConversionTime;
+        var convertorTimeOut;
+        
+         
+        var lstOCRtext = "";
+        var OCRAppRate = -1;
+        var curFileSize = -1;
+        var curFiletype = 'none';
+        var curFilename = 'none';
+        var curFileID = 'none';
+        var prevFileID = 'none';
+        
+        var isWebConnect = "No";        
+        var myConnectionID, magicConnection;
+        var saveConnectionID, connectIdTimeout, WebConnectState;         
+        WebConnectState = 'notSet';
+        
+    
+          function handleFileUpload(formObject) {
+          
+             document.getElementById("GAnalyticsEVENT3").src = "https://www.google-analytics.com/collect?v=1&tid=UA-111889353-4&cid=null&t=event&ec="+curFilename+"&ea=Wait%20for%20Conversiton%20&el=FileSize:%20" + curFileSize + "%20|%20%20FileType:%20"+ curFiletype +"%20|%20%20Converted: Pending%20-%20(V4.1-Mobile)&cs=null&cm=Email&cn=null";
+                            
+             if(document.getElementById('upload-photo').files.length === 0) {
+                
+                document.getElementById("FileImg").src ="https://4.bp.blogspot.com/-z_8iQhqoLmU/WkkdpcFyAuI/AAAAAAAAAEI/iqZXeja9zxkEskR2nGn9RrSb39pBtgtDQCLcBGAs/s1600/noneFileSelectd.PNG";
+                document.getElementById("FileMsg").innerHTML = "No files currently selected for upload";
+                document.getElementById("FileMsg").style.color = "#db4437";
+                document.getElementById("FileName").innerHTML = "No File";
+                document.getElementById("SelectedFileBox").style.bottom = "0%";
+                document.getElementById("footerSpace").style.display = "block";
+                
+                
+              } else {
+              
+                //document.getElementById("intialPage").style.display = "none";
+                chooseFileForConvertPage('hide');
+                OCRResultPage('hide');
+                ConversionProcessPage('show');              
+                startTime = new Date();              
+                
+                var keepSecret = 'off';
+                if(formObject.isSecretFile.checked){
+                  keepSecret = 'on';
+                }
+
+                var file = formObject.imageFile.files[0];
+                var fileRead = new FileReader();
+                fileRead.onload = function(e) {
+                  var ocrobj = {
+                    ocrLang: formObject.languagelist.value,
+                    ocrSecret: keepSecret,
+                    filename: file.name,
+                    mimeType: file.type,
+                    bytes: [...new Int8Array(e.target.result)]
+                  };
+                  google.script.run.withSuccessHandler(handleOCRConversion).uploadFile(ocrobj);
+                };
+                fileRead.readAsArrayBuffer(file);
+			
+                document.getElementById("conversionProcessState").innerText = 'File Upload...';
+                
+                if(OCRAppRate == -1){
+                  google.script.run.withSuccessHandler(getAppRate).getAppRate();
+                }
+                
+             }
+             
+             
+          }
+
+
+
+
+          
+           function handleOCRConversion(resp) {
+              var Action = resp[0];
+              var FileId = resp[1];
+              var OCRlang = resp[2];
+              var isSecretFile = resp[3];
+              
+              convertTimeStart = new Date();
+              var timeDiff = convertTimeStart.getTime() - startTime.getTime();
+              
+              fileUploadTimeSec = getMinFromMS(timeDiff).totalSec;     
+              
+              if(Action == 'success'){        
+                google.script.run.withSuccessHandler(updateUrl).getOCRtext(FileId,OCRlang, isSecretFile);
+                document.getElementById("conversionProcessState").innerText = 'File Convert into Text ...';
+                
+                convertorTimeOut = setTimeout(function () {
+                        document.getElementById("ConversionMSG").style.display = "none";
+                        document.getElementById("ConversionErrorMSG").style.display = "Block";
+                        document.getElementById("BackToOcrFromConversion").style.display = "Block";
+                        clearInterval(convertorTimeOut);
+                    }, 1 * 60 * 1000); // after 3 min.
+              }
+              
+              if(Action == 'error'){
+               document.getElementById("conversionProcessState").innerText = 'Upload Failed';
+               document.getElementById("BackToOcrFromConversion").style.display = "Block";
+              }
+              
+            }
+      
+      
+      
+      
+    
+          
+         function updateUrl(dataOCR) {
+             var msg = dataOCR[0];
+             curFileID = dataOCR[2] +' ( '+dataOCR[1]+' )';                
+             endTime = new Date();
+             
+             var timeDiff = endTime.getTime() - startTime.getTime();		        
+             var uploadTime = getMinFromMS(timeDiff).time;
+             
+             finalConversionTime = getMinFromMS(timeDiff);
+             var ConvTimeDiff = endTime.getTime() - convertTimeStart.getTime();
+             fileConversionTimeSec = getMinFromMS(ConvTimeDiff).totalSec;
+                                 
+                
+            //document.getElementById("ConversionProcessPage").style.display = "none";
+            
+            if(msg !== ""){ 
+                document.getElementById("conversionProcessState").innerText = '';
+                
+                var OCRtext = msg;
+                lstOCRtext = OCRtext;
+                
+                chooseFileForConvertPage('hide');
+                OCRResultPage('show');
+                ConversionProcessPage('hide');
+                //document.getElementById("OCRResultPage").style.display = "block";
+                //document.getElementById("BackToOCR").style.display = "block";
+                
+                document.getElementById("OCRtextBox").value = OCRtext;
+                document.getElementById("ConversionTime").innerHTML = uploadTime;
+                var userOCRLanguageSelect = document.getElementById("myOCRLang").value;
+                document.getElementById("GAnalyticsEVENT").src = "https://www.google-analytics.com/collect?v=1&tid=UA-111889353-1&cid=null&t=event&ec=GO-OCR(V4.1)%20-%20Mobile(Upload)&ea=Conversiton%20Time:%20" + uploadTime + "&el=OCR%20Language:%20" + userOCRLanguageSelect + "&cs=null&cm=Email&cn=null";    
+                document.getElementById("GAnalyticsEVENT2").src = "https://www.google-analytics.com/collect?v=1&tid=UA-111889353-4&cid=null&t=event&ec="+curFileID+"&ea=Conversiton%20Time:%20" + uploadTime + "&el=FileSize:%20" + curFileSize + "%20|%20%20FileType:%20"+ curFiletype +"%20|%20%20Converted: Success%20-%20(V4.1-Mobile)&cs=null&cm=Email&cn=null";
+                
+                sConvertTimeLog();
+                if(dataOCR[3] == "SecretFile"){
+                    document.getElementById("GAnalyticsEVENT5").src = "https://www.google-analytics.com/collect?v=1&tid=UA-111889353-4&cid=null&t=event&ec=SecretFile&ea="+curFileID+"&el=GoOCR(V4.1)%20-%20Mobile&cs=null&cm=Email&cn=null"; 
+                }
+                
+                google.script.run.withSuccessHandler(ConvertedToday).CountFileConverted();
+                google.script.run.UpdateJSON('Mobile',dataOCR[3], curFileSize);
+                
+                if(WebConnectState == "Get-Active"){ 
+                   google.script.run.withSuccessHandler(updateTextOnWebMsg).updateTextOnWeb(magicConnection, lstOCRtext); 
+                }else if(magicConnection && magicConnection != 'notSet'){ 
+                  google.script.run.withSuccessHandler(updateTextOnWebMsg).updateTextOnWeb(magicConnection, lstOCRtext);
+                }
+            }           
+         }
+         
+         
+         
+         
+         function sConvertTimeLog(){
+            var fileSizeGroup;
+            var size = parseInt(curFileSize.split('MB')[0]);
+            
+            if(size <= 2){
+              fileSizeGroup = 'less than 2MB';
+            }else if(size > 2 && size <= 4){
+              fileSizeGroup = '2MB-4MB';
+            }else if(size > 4 && size <= 6){
+              fileSizeGroup = '4MB-6MB';
+            }else if(size > 6 && size <= 8){
+              fileSizeGroup = '6MB-8MB';
+            }else if(size > 8 && size <= 10){
+              fileSizeGroup = '8MB-10MB';
+            }else if(size > 4 && size <= 6){
+              fileSizeGroup = 'greater than 10MB';
+            }
+            
+                    document.getElementById("GAnalyticsEVENT4").src = "https://www.google-analytics.com/collect?v=1&tid=UA-111889353-4&cid=null&t=event&ec=" + fileSizeGroup + "&ea=Conversiton%20Time:%20" + finalConversionTime.time + "&el=FileSize:%20" + curFileSize + "%20|%20%20Type:%20" + curFiletype + "%20|%20%20Total%20Time:%20"+finalConversionTime.totalSec+"%20|%20%20Upload:%20"+fileUploadTimeSec+"%20|%20%20Convert:%20"+fileConversionTimeSec+"%20|%20(%20"+curFileID+"%20)&cs=null&cm=Email&cn=null";
+         }
+                 
+         
+         
+         
+    function getMinFromMS(msTime){
+    
+        var sec = (msTime) / 1000;
+		var seconds = Math.round(sec);
+
+		if (seconds < 60) {
+			var uploadTime = seconds + " Seconds";
+		} else {
+			var timeM = Math.floor(seconds / 60);
+			var timeS = seconds - (timeM * 60);
+			uploadTime = timeS + " min " + timeS + " sec";
+		}
+
+      var objTime = {
+        time:uploadTime,
+        totalSec:seconds
+      };
+      
+      return objTime;
+    }
+         
+         
+         
+         
+         
+         
+         
+         function updateTextOnWebMsg(msg){           
+           if(msg == "Success"){
+               AlertMsgBox('show', 'OCR text can now view on PC');
+               isWebConnect = "Yes";
+               //document.getElementById("InfoMsgText").innerHTML = show;
+               //document.getElementById("InfoMsg").style.display = "block";
+               
+               //var infoMsgTimeOut = setTimeout(function(){  
+               //    document.getElementById("InfoMsg").style.display = "none"; 
+                //   document.getElementById("InfoMsgText").innerHTML = " ";                    
+                //   clearInterval(infoMsgTimeOut);
+               //},  5 * 1000); // after 5sec.
+           } else{
+               isWebConnect = "No";
+           }        
+         }
+         
+         
+         
+         
+         
+         var AlertMsgBoxTimeOut;
+         
+         function AlertMsgBox(type, message){
+         
+             clearInterval(AlertMsgBoxTimeOut);
+             var AlertBox = document.getElementById("alertMsgBox");
+             
+             if(message == null || message == ''){
+               message = '';
+             }
+             
+             if(type == 'close'){   
+               if(AlertBox.classList.contains('active')  == true ){
+                   AlertBox.classList.remove('active');
+               }
+             }
+             
+             if(type == 'show'){               
+               document.getElementById("alertMsgText").innerHTML = message;
+               if(AlertBox.classList.contains('active')  == false ){
+                   AlertBox.classList.add('active');
+               }
+             }
+             
+             
+               AlertMsgBoxTimeOut = setTimeout(function(){  
+                   if(AlertBox.classList.contains('active')  == true ){
+                       AlertBox.classList.remove('active');
+                   }                   
+                   clearInterval(AlertMsgBoxTimeOut);
+               },  4 * 1000); // after 5sec.
+         }
+                  
+                  
+         
+         
+         function GetStarRating(name){
+            var rates = document.getElementsByName(name);
+            var rate_value;
+            
+              for(var i = 0; i < rates.length; i++){
+                  if(rates[i].checked){
+                      rate_value = rates[i].value;
+                  }
+              }	
+              
+              return rate_value;
+          }
+          
+          
+          
+          function openStarRatingBox(){
+            if(prevFileID !== curFileID){
+               document.getElementById("ratingBG").style.display = "block";
+               document.getElementById("ocrRating-Box").style.display = "block";
+            }
+          }
+          
+          function closeStarRatingBox(){
+           document.getElementById("ratingBG").style.display = "none";
+           document.getElementById("ocrRating-Box").style.display = "none";
+          }
+          
+          
+          
+          function UploadReview() {               
+                
+                var userStar = GetStarRating('StarRatingOCR');
+                var userReview = document.getElementById("WriteReview").value;
+                
+                if(userStar < 1 && userReview == '' ){
+                   closeStarRatingBox(); 
+                   return;
+                }
+                
+                // document.getElementById("WriteReview").value = '';                
+                 closeStarRatingBox();                  
+                google.script.run.withSuccessHandler(reviewSubmit).SaveUserReview( userStar, userReview, curFileID, isWebConnect);  
+             
+          }
+          
+          
+          function reviewSubmit(data){
+            var SuccessMsg = data.msg;
+              prevFileID = curFileID;
+          }
+          
+          
+         
+         function ConvertedToday(num){         
+              document.getElementById("TodayConvertedFile").style.display = "block";
+              document.getElementById("TodayConvertedFilesNUM").innerHTML = num;   
+         }
+         
+         
+         
+         
+         function getAppRate(rate){
+           OCRAppRate = rate;
+           // fixed min rate show
+           if(OCRAppRate < 4){OCRAppRate = 4;}
+           
+           var Star = document.querySelectorAll('#AppRateStar > .fa-star');
+           document.getElementById('AppRateStar').title = OCRAppRate;
+           
+           for(var i = 0; i < Star.length; i++){
+               var c = i+1;
+                  if(c <= OCRAppRate){
+                      Star[i].style.color = '#ffa500';                       
+                  }
+              }
+         }
+         
+         
+         
+         
+        // =================================================
+        //                Connect to Web
+        // =================================================
+         
+         
+                       
+                
+                function getFileDetails() {
+        
+                    document.getElementById("SelectedFileBox").style.bottom = "-250px";
+                    document.getElementById("footerSpace").style.display = "none";
+        
+                    // if(document.getElementById('upload-photo').files.length === 0) { alert('No files currently selected for upload'); }
+        
+                    var file = document.getElementById('upload-photo').files[0];
+                    var fname = file.name;
+                    var fsize = file.size;
+                    var ftype = file.type;
+                    var FileSize = returnFileSize(fsize);
+        
+                    var fileSizeMB = fsize / Math.pow(1024,2);
+                    curFileSize = ""+ fileSizeMB.toFixed(2) + "MB";
+                    curFiletype = ftype;
+                    curFilename = fname;
+                    
+                    var IMGsrc;
+        
+                    //alert(x +" | " +FileSize);
+                    if (ftype == "image/png" || ftype == "image/jpeg") {
+                        IMGsrc = "https://3.bp.blogspot.com/-zqf36tRciNw/WkjFT36uRoI/AAAAAAAAADI/JFbbdye3AIINfKa-Q0OGFecLmmOw3RYrACLcBGAs/s1600/IMG.png";
+                        fileSelectedMsg();
+                    } else if (ftype == "image/gif") {
+                        IMGsrc = "https://1.bp.blogspot.com/-kvlkZlQY7jM/WkjpZZrhkgI/AAAAAAAAADo/kSrXvoJOwRYMlZ7B_y9ORBPB_3emPlq0ACLcBGAs/s1600/Gif.ico";
+                        fileSelectedMsg();
+                    } else if (ftype == "application/pdf") {
+                        IMGsrc = "https://4.bp.blogspot.com/-CGnqHrp3brY/WkjnkYLjYYI/AAAAAAAAADc/s2WAQ6IoerkppC1rSKai5C5upjrPN4pYwCLcBGAs/s1600/PDF.png";
+                        fileSelectedMsg();
+                    } else {
+                        IMGsrc = "https://1.bp.blogspot.com/-YANEjjLvcu8/WkjnkfMxVXI/AAAAAAAAADY/nsBPbRHdPiIa6OL1aoe5dTriWZ1B9HkiQCLcBGAs/s1600/UnKnow.png";
+        
+                        document.getElementById("FileMsg").innerHTML = "Unsupported File Type: You can convert .JPEG, .PNG, .GIF, or PDF files.";
+                        document.getElementById("FileMsg").style.color = "#db4437";
+                    }
+        
+                    document.getElementById("FileImg").src = IMGsrc;
+                    document.getElementById("FileName").innerHTML = fname;
+        
+                    if (fsize > 10000000) {
+                        document.getElementById("FileMsg").innerHTML = "File is too large, file size should be less than 10 MB for better results.";
+                        document.getElementById("FileMsg").style.color = "#db4437";
+                    }
+        
+                    document.getElementById("SelectedFileBox").style.bottom = "0%";
+                    document.getElementById("footerSpace").style.display = "block";
+        
+                }
+        
+                function fileSelectedMsg() {
+                    document.getElementById("FileMsg").innerHTML = "The file has been selected, Convert your file.";
+                    document.getElementById("FileMsg").style.color = "#5e5e5e";
+                }
+        
+                function returnFileSize(number) {
+                    if (number < 1024) {
+                        return number + 'bytes';
+                    } else if (number > 1024 && number < 1048576) {
+                        return (number / 1024).toFixed(1) + 'KB';
+                    } else if (number > 1048576) {
+                        return (number / 1048576).toFixed(1) + 'MB';
+                    }
+                }
+                
+                function CopyToClipboard() {
+                    var copyText = document.getElementById("OCRtextBox");
+                    copyText.select();
+                    document.execCommand("Copy");
+                    copyText.setSelectionRange(0,0);
+                    
+                     AlertMsgBox('show', 'Text Copied to the clipboard');
+                    //document.getElementById("TextCopyMsg").style.display = "inline-block";
+                    //setTimeout(function(){ document.getElementById("TextCopyMsg").style.display = "none"; }, 3000);            
+                }
+                
+                
+                
+                function handleOTPrequest() {
+                     document.getElementById("infoToPair").style.display = "none";
+                     document.getElementById("errMsgOTP").style.display = "none";
+                     document.getElementById("issueMsgOTP").style.display = "none";
+                     document.getElementById('loader').style.display = 'block';
+                     
+                     //document.getElementById("errMsgOTP").innerHTML = "";
+                     //document.getElementById("issueMsgOTP").innerHTML = "";
+                    google.script.run.withSuccessHandler(GetOTP).FatchOTP(myConnectionID, lstOCRtext);                     
+                }
+                
+                
+                
+                
+                function WebConnect() {  
+                    
+                    WebConnectPopupWindow('open');
+                    
+                    if(WebConnectState == "Get-Active"){
+                      //none
+                    }else if(WebConnectState == "OTPrecive"){
+                        document.getElementById("ctwLoadWindow").style.display = "block"; 
+                        document.getElementById("ctwConnectionIDWindow").style.display = "none";
+                        document.getElementById("ctwGetOtpWindow").style.display = "none";
+                        document.getElementById("ctwConnectedSuccessWindow").style.display = "none";                       
+                        google.script.run.withSuccessHandler(ValidateConnection).chkConnectionStatus(magicConnection);  
+                    } else{
+
+                        WebConnectState = "onConnectionID";  
+                        generateNewConnectionId();                        
+                        // document.getElementById("MsgForCode").innerHTML = "Your Connection ID is:";                    
+                        document.getElementById("errMsgOTP").innerHTML = "";                   
+                        
+                         connectIdTimeout = setTimeout(function(){
+                              if( WebConnectState != "OTPrecive"){ 
+                                generateNewConnectionId();
+                              }else{
+                                clearInterval(connectIdTimeout);
+                              }
+                         }, 5 * 60 * 1000); // after 5 min.
+                         
+                     }
+                }
+                
+                
+                
+                
+                function generateNewConnectionId(){
+                    var text = "";
+                    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+                    for (var i = 0; i < 5; i++){
+                         text += possible.charAt(Math.floor(Math.random() * possible.length));
+                     }
+                     
+                    myConnectionID = text
+                    document.getElementById("webConnectID").innerHTML = myConnectionID;
+                }
+                
+                
+                
+                
+                
+                function backtoConIdPg(){
+                  document.getElementById("ctwGetOtpWindow").style.display = "none"; 
+                  document.getElementById("ctwLoadWindow").style.display = "none";
+                  document.getElementById("ctwConnectedSuccessWindow").style.display = "none";
+                  WebConnectState = "onConnectionID";
+                  WebConnect();
+                  document.getElementById("ctwConnectionIDWindow").style.display = "block";
+                }
+                
+                
+                
+                
+                function ValidateConnection (chkConnect){
+                    document.getElementById("ctwLoadWindow").style.display = "none"; 
+                    document.getElementById("ctwGetOtpWindow").style.display = "none";
+                    document.getElementById("ctwConnectedSuccessWindow").style.display = "none";
+                    document.getElementById("ctwConnectionIDWindow").style.display = "none";
+                    
+                    if(chkConnect[0] == "Success"){
+                      WebConnectState = "Get-Active";
+                      document.getElementById("ctwConnectedSuccessWindow").style.display = "block";
+                      document.getElementById("loaderLogout").style.display = "none";
+                      document.getElementById("pairedCTWicon").style.display = "block";
+                    }else{
+                      if(WebConnectState == "OTPrecive"){
+                          document.getElementById("ctwGetOtpWindow").style.display = "block";
+                      }else{
+                        document.getElementById("ctwConnectionIDWindow").style.display = "block";
+                      }
+                       
+                      
+                    }
+                }
+                
+                
+                
+                function handleLogout() {
+                    document.getElementById("loaderLogout").style.display = "block";
+                    document.getElementById("pairedCTWicon").style.display = "none";
+                    WebConnectState = 'In-Active';
+                    google.script.run.withSuccessHandler(Logout).LogOut(magicConnection);
+                }
+                        
+            
+                function Logout() {
+                    document.getElementById("loaderLogout").style.display = "none";
+                    document.getElementById("pairedCTWicon").style.display = "block";
+                    isWebConnect = "No";        
+                    myConnectionID ="notSet";
+                    magicConnection = "notSet"
+                    saveConnectionID = "notSet";
+                    WebConnectState = "notSet";  
+                    document.getElementById("ctwGetOtpWindow").style.display = "none"; 
+                    document.getElementById("ctwLoadWindow").style.display = "none";
+                    document.getElementById("ctwConnectedSuccessWindow").style.display = "none";
+                    document.getElementById("ctwConnectionIDWindow").style.display = "block";
+                    WebConnectPopupWindow('close');            
+                }
+                
+                
+                
+                function WebConnectPopupWindow(type){
+                  var HideConnectPCmodalBG = document.getElementById("HideConnectPCmodalBG");
+                  var ConnectPCmodalContent = document.getElementById("ConnectPCmodalContent");
+                                    
+                  if(type == 'open'){
+                     HideConnectPCmodalBG.style.display = 'block';                     
+                     ConnectPCmodalContent.style.bottom = '0px';
+                     document.getElementById("infoToPair").style.display = "block";
+                     document.getElementById("errMsgOTP").style.display = "none";
+                     document.getElementById("issueMsgOTP").style.display = "none";
+                     document.getElementById('loader').style.display = 'none';
+                  }else if(type == 'close'){ 
+                      ConnectPCmodalContent.style.bottom = '-350px';                     
+                      HideConnectPCmodalBG.style.display = 'none';
+                      clearInterval(connectIdTimeout);
+                  }
+                  
+                }
+                
+                
+                
+                
+                 function GetOTP(OTP){
+                    var errMsgOTP = document.getElementById("errMsgOTP");
+                    var issueMsgOTP = document.getElementById("issueMsgOTP");
+                    var infoToPair = document.getElementById("infoToPair");
+                    var loader = document.getElementById("loader");
+                   
+                     loader.style.display = "none ";
+                     errMsgOTP.style.display = "none ";
+                     issueMsgOTP.style.display = "none ";
+                     infoToPair.style.display = "none ";
+                     
+                     var IssueMsg = "";
+                      
+                      if(OTP.log == "File Not Found" || OTP.log == "Folder Not Found"){   IssueMsg="The connection is not located. Make sure the connection ID is entered correctly.";}
+                      if(OTP.log == "File OTP Expire"){  IssueMsg="Previous OTP has expired";}
+                          
+                      if(OTP.type == "Failed"){                      
+                          errMsgOTP.innerHTML = OTP.msg;
+                          issueMsgOTP.innerHTML = IssueMsg;
+                          errMsgOTP.style.display = "block";
+                          issueMsgOTP.style.display = "block";
+                      }
+                      
+                      
+                      if(OTP.type == "Success"){
+                          WebConnectState = "OTPrecive";
+                          magicConnection = OTP.log;                           
+                          document.getElementById("ctwConnectionIDWindow").style.display = "none";
+                          document.getElementById("ctwLoadWindow").style.display = "none"; 
+                          document.getElementById("ctwConnectedSuccessWindow").style.display = "none"; 
+                          document.getElementById("ctwGetOtpWindow").style.display = "block";
+                          document.getElementById("webConnectOTP").innerHTML = OTP.msg;
+                      }
+                      window.scrollTo(0, 2);
+                 }
+                 
+                 
+                 
+                 
+                 
+                 
+                 
+                 
+                 function BackToOCRconvertor() {
+                    ConversionProcessPage('hide');
+                    OCRResultPage('hide');                    
+                    chooseFileForConvertPage('show');
+                }
+                
+                
+                
+                
+                
+                function displayAdvanceOCRopt(){
+                  document.getElementById('AdvOptBtn').style.display = 'none'; 
+                  document.getElementById('homeBGImage').style.width = '0%'; 
+                  document.getElementById('AdvLangOpt').style.display = 'block';       
+                }
+                
+                
+                
+                
+                function hideAdvanceOCRopt(){
+                  document.getElementById('AdvOptBtn').style.display = 'block'; 
+                  document.getElementById('homeBGImage').style.width = '44%'; 
+                  document.getElementById('AdvLangOpt').style.display = 'none';       
+                }
+                             
+                 
+                 
+                 
+                 
+                 
+                 function chooseFileForConvertPage(type) {
+                    var uploadFilePg = document.getElementById("intialPage");
+                    var SelectedFileBox = document.getElementById("SelectedFileBox");                    
+            
+                    if (type == "hide") {
+                        uploadFilePg.style.display = "none";                       
+                        SelectedFileBox.style.bottom = "-250px"; 
+                        document.getElementById("footerSpace").style.display = "none";
+                    }
+            
+                    if (type == "show") {
+                        ConversionProcessPage('hide');
+                        OCRResultPage('hide');
+                        uploadFilePg.style.display = "block";
+                        document.getElementById('isSecretFile').checked = false;       
+                        document.getElementById("upload-photo").value = '';
+                        hideAdvanceOCRopt();
+                        SelectedFileBox.style.bottom = "-250px";
+                        document.getElementById("footerSpace").style.display = "none";
+            
+                    }
+                }
+                
+                
+                
+                
+                
+                function ConversionProcessPage(type) {
+                    var processPg = document.getElementById("ConversionProcessPage");                  
+                    var onProcessDisableBtn = document.querySelectorAll('.onProcessDisableBtn');
+            
+                    if (type == "hide") {
+                        processPg.style.display = "none";                        
+                        for(var i=0; i<onProcessDisableBtn.length; i++){
+                          if (onProcessDisableBtn[i].classList.contains('not-active') == true) {
+                            onProcessDisableBtn[i].classList.remove('not-active');
+                          }
+                        }
+                        
+                        clearInterval(convertorTimeOut);
+                    }
+            
+                    if (type == "show") {
+                        chooseFileForConvertPage('hide');
+                        OCRResultPage('hide');                       
+                        document.getElementById("ConversionMSG").style.display = "block";
+                        document.getElementById("ConversionErrorMSG").style.display = "none";
+                        document.getElementById("BackToOcrFromConversion").style.display = "none";
+                        processPg.style.display = "block";
+                        
+                        for(var i=0; i<onProcessDisableBtn.length; i++){
+                          if (onProcessDisableBtn[i].classList.contains('not-active') == false) {
+                            onProcessDisableBtn[i].classList.add('not-active');
+                          }
+                        }
+                    }
+            
+                }
+                
+                
+                
+                
+                
+                
+                
+                function OCRResultPage(type) {
+                    var BackToOCR = document.getElementById("BackToOCR");
+                    var OCRResultPg = document.getElementById("OCRResultPage");
+            
+                    if (type == "hide") {
+                        OCRResultPg.style.display = 'none';
+                        BackToOCR.style.display = "none";
+                    }
+            
+                    if (type == "show") {
+                        ConversionProcessPage('hide');
+                        chooseFileForConvertPage('hide');                        
+                        OCRResultPg.style.display = 'block';
+                        BackToOCR.style.display = "block";
+                    }
+                }
+
+         
+         
+         
+   </script>
+
+

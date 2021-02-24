@@ -1,0 +1,448 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <base target="_Self">
+    <link href="https://fonts.googleapis.com/css?family=sans-serif|Roboto:300,400" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Lato&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700|Google+Sans:400,500|Product+Sans:400&amp;lang=en" nonce=""/>    
+          
+    <!--<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1">-->
+    
+    <?!= include("page-CSS"); ?> 
+    <?!= include("page-JS"); ?>
+    
+</head>
+
+<body onload="document.getElementById('waitLoadPage').style.display = 'none';">
+
+<div id="waitLoadPage" style=" position: fixed; top: 0; left: 0; z-index: 1000; width: 100%; height: 100%; background: white; text-align: center; ">
+<div style=" top: calc(50% - 150px); position: relative; "><img src="https://1.bp.blogspot.com/-5suTRL9CJIY/XygqsrMMNxI/AAAAAAAACCQ/Lyew0_6ZSWwUUV0qGu2Kg0tPgT8x1qGUACLcBGAsYHQ/s0/goocrload.gif" style="max-width: 275px;width: 100%;margin: auto;"></div>
+</div>
+
+
+
+        <!-- Connect to PC -->
+        <div id="HideConnectPCmodalBG" style=" width: 100%;  height: 100%; z-index:15;   background: #9292921f; position: fixed;top: 0; right: 0; display:none;" onclick=" WebConnectPopupWindow('close');"></div>
+        
+        <div id="ConnectPCmodalContent" class="Connect-PC-modal-content">
+        
+             <div>
+                <i id="BakBtn" style='padding: 8px; font-size: 28px; border-radius: 80%; cursor: pointer; color: #d4d1d1;margin-left: 0; margin-top: 0;' class="material-icons bakBtn" onclick="WebConnectPopupWindow('close')" >keyboard_arrow_left</i>
+             </div>
+        
+             <div id="ConnectPCmodalBody" class="modal-body scrollbar light" style=" max-height: 300px;  overflow-y: scroll;">
+             
+             
+              <div id="ctwLoadWindow" style="display: none;">     
+                  <div style=" padding:4px; ">
+                     <div class="loader" style="display: block;"></div>                
+                  </div>                  
+                  <div style=" padding:22px;"></div>
+              </div>
+             
+                <div id="ctwConnectionIDWindow">
+                  <div id="MsgForCode" style="text-align: center; width: 80%; margin: auto; padding-top: 10px; padding-bottom: 20px; color: #565656; font-size: 18px; color: #000000c9; font-family: 'Google Sans',sans-serif; font-weight: 500; margin-bottom: 0px; line-height: 1.5; ">Your Connection ID is:</div>
+                  <div id="webConnectID" style="text-align: center; width: fit-content; margin: auto; font-size: 30px; padding: 8px 0px 8px 14px; background: #eee; letter-spacing: 14px; color: #222;">_____</div>
+                  <div style=" padding:22px; ">
+                      <div id="infoToPair" style="color: #898989; font-size: 14px; padding: 12px 14px; text-align: center;">To pair your  phone and computer, enter the connection id on your computer screen and then tap on "Get OTP" button.</div>
+                     <div id="loader" class="loader"></div>
+                     <div id="errMsgOTP" style="text-align: center;font-size: 18px;color: #ea4335;margin-bottom: 12px; display:none;"></div>
+                     <div id="issueMsgOTP" style="text-align: center;font-size: 14px;color: #9E9E9E; display:none;"></div>
+                  </div>
+                  <div style=" text-align: center;">
+                     <div class="button-convert dark-action-btn" onclick="handleOTPrequest()" style="padding: 14px 32px; margin: auto;display: inline-block;font-size: 14px; font-weight: 500;">Get OTP</div>
+                  </div>
+                  <div style=" padding:22px;"></div>
+                </div>
+                
+                 <div id="ctwGetOtpWindow" style="display:none";>
+                  <div style="text-align: center; width: 80%; margin: auto; padding-top: 10px; padding-bottom: 20px; color: #565656; font-size: 18px; color: #000000c9; font-family: 'Google Sans',sans-serif; font-weight: 500; margin-bottom: 0px; line-height: 1.5; ">Your One Time Password (OTP) is:</div>
+                  <div id="webConnectOTP" style="text-align: center; width: fit-content; margin: auto; font-size: 30px; padding: 8px 0px 8px 14px; background: #eee; letter-spacing: 14px; color: #222;">_____</div>
+                  <div style=" padding:22px;"></div>
+                  <div style=" text-align: center;">
+                     <div class="button-convert dark-action-btn" onclick="backtoConIdPg()" style="padding: 14px 32px; margin: auto;display: inline-block;font-size: 14px; font-weight: 500;">New Connection ID</div>
+                  </div>
+                  <div style=" padding:22px;"></div>
+                </div>
+                
+                
+                 <div id="ctwConnectedSuccessWindow" style="display:none";>
+                  <div style="text-align: center;width: 80%;margin: auto;padding-top: 10px;padding-bottom: 6px;font-size: 18px;color: #01b48d;font-family: 'Google Sans',sans-serif;font-weight: 500;margin-bottom: 0px;line-height: 1.5;">Connected</div>
+                  <div style=" text-align: center; ">
+                    <span id="pairedCTWicon" class="connecttoweb_icon" style="font-size: 78px;color: #c5c5c5;"></span>
+                    <div id="loaderLogout" class="loader" style="margin: 20px auto; display:none;"></div> 
+                  </div>
+                   
+                   <div style=" padding:4px; "> </div>
+                  <div style=" text-align: center;">
+                     <div class="button-convert dark-action-btn" onclick="handleLogout()" style="padding: 14px 32px; margin: 1;display: inline-block;font-size: 14px; font-weight: 500;">Sign out</div>
+                  </div>
+                  <div style=" padding:22px;"></div>
+                </div>
+                
+             </div>
+        </div>
+
+  
+    
+    
+
+    <div style="height:64px;"></div>    
+    
+    <div id="HideInfoBG" style=" width: 100%;  height: 100%; z-index:15;   background: rgba(127, 255, 212, 0.02); position: fixed;top: 0; right: 0; display:none;" onclick="document.getElementById('info-Block').style.display = 'none'; document.getElementById('HideInfoBG').style.display = 'none';"></div>
+    <div id="info-Block" class="moreInfoBox more-block" style="width:200px; z-index:20;">
+        <a target="_top" class="more-item displayBlock">Sign in</a>
+        <a href="http://goocr.blogspot.com/" target="_top" class="more-item displayBlock">About</a>
+        <a onclick="document.getElementById('info-Block').style.display = 'none'; document.getElementById('HideInfoBG').style.display = 'none'; WebConnect(); " class="more-item displayBlock" id="ConnectBtn">Connect to PC</a>
+        <a href="https://goocr.blogspot.com/?app=desktop" target="_top" class="more-item displayBlock">Desktop Site</a>
+        <a href="http://unexpectedweb.blogspot.com/p/tools.html" target="_blank" class="more-item displayBlock">More Tools</a>
+    </div>
+
+
+
+    <div class="tabcontent header-nav">
+
+        <div id="GAnalytics" style="display:none">
+            <img id="GAnalyticsEVENT" border="0" src="https://1.bp.blogspot.com/-YANEjjLvcu8/WkjnkfMxVXI/AAAAAAAAADY/nsBPbRHdPiIa6OL1aoe5dTriWZ1B9HkiQCLcBGAs/s16/UnKnow.png" />
+            <img id="GAnalyticsEVENT2" border="0" src="https://1.bp.blogspot.com/-YANEjjLvcu8/WkjnkfMxVXI/AAAAAAAAADY/nsBPbRHdPiIa6OL1aoe5dTriWZ1B9HkiQCLcBGAs/s16/UnKnow.png" />
+            <img id="GAnalyticsEVENT3" border="0" src="https://1.bp.blogspot.com/-YANEjjLvcu8/WkjnkfMxVXI/AAAAAAAAADY/nsBPbRHdPiIa6OL1aoe5dTriWZ1B9HkiQCLcBGAs/s16/UnKnow.png" />
+            <img id="GAnalyticsEVENT4" border="0" src="https://1.bp.blogspot.com/-YANEjjLvcu8/WkjnkfMxVXI/AAAAAAAAADY/nsBPbRHdPiIa6OL1aoe5dTriWZ1B9HkiQCLcBGAs/s16/UnKnow.png" />
+            <img id="GAnalyticsEVENT5" border="0" src="https://1.bp.blogspot.com/-YANEjjLvcu8/WkjnkfMxVXI/AAAAAAAAADY/nsBPbRHdPiIa6OL1aoe5dTriWZ1B9HkiQCLcBGAs/s16/UnKnow.png" />
+        </div>
+
+
+        <div id="BackToOCR" class="infoBtn NoSelect" style="float:left;display:none;" onclick="if(prevFileID !== curFileID){ document.getElementById('ratingBG').style.display = 'block'; document.getElementById('ocrRating-Box').style.display = 'block'; } BackToOCRconvertor();">
+            <i class="material-icons" style="font-weight: 400; font-size: 1.7rem;vertical-align: middle;">arrow_back</i>
+        </div>
+
+        <div id="OCRPro" class="head-logo" style="padding:0 10px; Display:Inline-block;#f7f7f7; vertical-align: middle;">          
+		         <a href="http://goocr.blogspot.com" target="_top">
+		         <span class="goocr_icon" style="display:none;"></span>
+                 <img src="https://1.bp.blogspot.com/-9-ZY585BAuw/XxPsZqEoWyI/AAAAAAAAB7A/w0ScuvrzjBAHAScFi4STuHdApkhOtqv3QCLcBGAsYHQ/s150/GoOCR6.png" style=" max-height: 32px; vertical-align: middle;">
+		         <span style="padding: 10px; height: 32px; vertical-align: middle;">GoOCR</span>
+		         </a>
+		     
+        </div>
+
+        <div id="info" class="infoBtn NoSelect" onclick="document.getElementById('info-Block').style.display = 'block'; document.getElementById('HideInfoBG').style.display = 'block';">
+            <i class="material-icons" style="font-weight: 400; font-size: 1.7rem;  vertical-align: middle;">more_vert</i>
+        </div>
+
+        <div id="info" class="infoBtn" onclick="WebConnect();" style="">
+            <img class="material-icons" style="width: 42px; vertical-align: middle; opacity: 0.8;" src="https://1.bp.blogspot.com/-JNluvUvdmVM/W13w0ZrVKJI/AAAAAAAAAYo/l_e7h171POoxHf9T9VXrePxhPztTGRasQCLcBGAs/s320/connect-to-phone.png">
+            <img class="material-icons" style="width: 42px; vertical-align: middle; display:none;" src="https://2.bp.blogspot.com/-PbaqnKDQx8c/W15xbegaf8I/AAAAAAAAAY4/oj-n47up82EPUnvaPRd1ZSpOUhg8-YzrwCLcBGAs/s320/connect-to-phone-W.png">
+        </div>
+
+
+    </div>
+
+    <div id="intialPage" style="padding: 48px 40px; text-align: center; padding-top: 20px;">
+
+        <div style="display:block;">
+            <img id="homeBGImage" border="0" src="https://3.bp.blogspot.com/-AF35pPK6TUY/WkexaciyFxI/AAAAAAAAACk/iurVyUd93fc-4kcjyhotMECC7vm-ex6tgCLcBGAs/s1600/upload-to-cloud.png" />
+           <div class='description'>
+		         <p style="font-size: 16px; color: #000; font-family: 'Google Sans',sans-serif; font-weight: 500;    margin-bottom: 0px;  line-height: 1.5;">Upload a scanned Image or PDF file</p>
+		         <p style="color: rgba(0,0,0,0.64); line-height: 1.6;  margin-top: 8px;">Upload .jpeg, .png, .gif or .pdf files, The file size should be 10 MB or less.</p>
+		   </div>
+        </div>
+
+        <!-- <form id="myForm">
+<input type="file" class="inputText" name="imageFile">
+<input type="button" class="button" style="background-color: #2d2d2d; margin-top: 32px; cursor: pointer;" value="Convert" onclick="handleFileUpload(this.parentNode)">
+</form> -->
+
+
+        <div style="margin: 42px 0;">
+            <label for="upload-photo" class="dark-action-btn buttonS2">Choose File</label>
+            <form id="goocrFile" onsubmit="event.preventDefault(); handleFileUpload(this);">
+                <input type="file" name="imageFile" id="upload-photo" style="margin: 12px 0;" accept="image/*, .pdf" onchange="getFileDetails()" />
+                <input type="submit" class="button" style="padding: 8px 82px; margin: 12px 0;" value="Convert" >
+
+
+                <div id="AdvLangOpt" style="display: none; padding: 10px; -webkit-transition: all .2s ease-in-out; transition: All .2s ease-in-out;">
+                    <div style="margin-bottom: -4px; padding-right: 40px; margin-top: -14px;">
+                            <div style="padding: 22px; font-size: 16px; display: inline-block; cursor: pointer; color: #333;" onclick="document.getElementById('isSecretFile').click();">Secret File</div>
+                          
+                            <label class="ToggleSwitchBtn NoSelect">
+                                <input id="isSecretFile" name="isSecretFile" type="checkbox" class="tglCheckbox" />
+                                <span class="tglKnobs"></span>
+                            </label>
+                      </div>
+                
+                
+                    <select name="languagelist" form="goocrFile" id="myOCRLang" class="InputSelectLang" style=" min-width:128px;">
+                        <option value="DefaultLang">Auto Detection</option>
+                        <option value="MultiLang" selected="selected">Multi Language</option>
+                        
+                        <option value="af">Afrikaans</option>
+                        <option value="ar">Arabic</option>
+                        <option value="as">Assamese</option>
+                        <option value="az">Azerbaijani</option>
+                        
+                        <option value="be">Belarusian</option>
+                        <option value="bn">Bengali</option>
+                        <option value="bg">Bulgarian</option>
+                        
+                        <option value="ca">Catalan</option>
+                        <option value="zh">Chinese</option>
+                        <option value="hr">Croatian</option>
+                        <option value="cs">Czech</option>
+
+                        <option value="da">Danish</option>
+                        <option value="nl">Dutch</option>
+
+                        <option value="en">English</option>
+                        <option value="et">Estonian</option>
+
+                        <option value="tl">Filipino</option>
+                        <option value="fi">Finnish</option>
+                        <option value="fr">French</option>
+
+                        <option value="de">German</option>
+                        <option value="el">Greek</option>
+                        
+                        <option value="iw">Hebrew</option>
+                        <option value="hi">Hindi</option>
+                        <option value="hu">Hungarian</option>
+
+                        <option value="is">Icelandic</option>
+                        <option value="id">Indonesian</option>
+                        <option value="it">Italian</option>
+
+                        <option value="ja">Japanese</option>
+
+                        <option value="kk">Kazakh</option>
+                        <option value="ko">Korean</option>
+                        <option value="ky">Kyrgyz</option>
+
+                        <option value="lv">Latvian</option>
+                        <option value="lt">Lithuanian</option>
+
+                        <option value="mk">Macedonian</option>
+                        <option value="mr">Marathi</option>
+                        <option value="mn">Mongolian</option>
+
+                        <option value="ne">Nepali</option>
+                        <option value="no">Norwegian</option>
+                        
+                        <option value="ps">Pashtu</option>
+                        <option value="fa">Persian</option>
+                        <option value="pl">Polish</option>
+                        <option value="pt">Portuguese</option>
+
+                        <option value="ro">Romanian</option>
+                        <option value="ru">Russian</option>
+
+                        <option value="sa">Sanskrit</option>
+                        <option value="sr">Serbian</option>
+                        <option value="sk">Slovak</option>
+                        <option value="sl">Slovenian</option>
+                        <option value="es">Spanish</option>
+                        <option value="sv">Swedish</option>
+
+                        <option value="ta">Tamil</option>
+                        <option value="th">Thai</option>
+                        <option value="tr">Turkish</option>
+
+                        <option value="uk">Ukrainian</option>
+                        <option value="ur">Urdu</option>
+                        <option value="uz">Uzbek</option>
+
+                        <option value="vi">Vietnamese</option>
+                      </select>                     
+                      
+                       
+                </div>
+            </form>
+
+            <div id="AdvOptBtn" style="display: inline-block;padding: 22px; cursor: pointer; font-Size: 0.76rem; color: rgba(0,0,0,0.64);" onclick="displayAdvanceOCRopt()"> Advanced Options</div>
+
+
+        </div>
+
+        <div style="height:0px;"></div>
+
+    </div>
+
+
+
+
+    <div id="ConversionProcessPage" style="padding: 20px 40px; text-align: center;  display: none;">
+    
+    <div id='AdUnit1' style="max-height: 140px; margin: 10px 0; overflow: hidden;cursor: pointer;">
+        <a href='https://www.youtube.com/watch?v=crqUDl8BPWI?utm_source=GoOCR-v4.0&utm_medium=goOCR-Ads1&utm_campaign=goocrMobileAdUnit1'  target="_blank"> 
+            <img border="0" src="https://1.bp.blogspot.com/-UNuA1RN5Qpg/Xj252GxMN5I/AAAAAAAABPc/hi0JlzDa1YYJgF_exY7HiThMj-Iv94MFQCLcBGAsYHQ/s1600/avast-secure-browser-hack-check.jpg" style="width: 100%;">
+        </a>
+    </div>
+
+        <div style="display:block;margin: 60px 0px;">
+            <div id="processDots" style="display: block;"></div>            
+            <div id="ConversionMSG">
+                  <div class="ConversionProcessPage-text">Conversion process may take some time...</div>
+                  <p id='conversionProcessState' style="font-size: 1.1rem;margin-bottom: 42px; font-family: roboto; font-weight: 300;"></p>
+             </div>
+            <div id="ConversionErrorMSG" style="color:#5e5e5e;width:100%; display:none;">
+                <p class="ConversionProcessPage-text" style="font-size: 1rem;margin-bottom: 42px;">Probably the file is not able to convert</p>
+                <p style="font-size: 1.2rem; margin-bottom: 22px; font-family: roboto; font-weight: 300;">The OCR program is taking longer than usual to process, please try another image.</p>
+                <div>		                  
+		                  <button id="BackToOcrFromConversion" class="button-convert dark-action-btn" style="font-size: 1.1rem;display: block;padding: 12px 24px;" onclick="BackToOCRconvertor()">
+                            <i class="material-icons" style="font-weight: 400; vertical-align: middle;">arrow_back</i>
+                            <span style="vertical-align: middle;"> Back</span>
+                          </button>		                 
+		            </div>
+
+
+                <div style="text-align: left; margin: auto;  width: 80%; max-width: 900px;  line-height: 1.6;  font-size: 1.15rem;  margin-top: 52px; display:none;">
+                    Try these tips:
+                    <ul>
+                        <li>Click Advanced Options and select Specific language (don't select "Multi Language" or "Auto Detection" )</li>
+                        <li>Rotate Image for Proper Orientation</li>
+                        <li>Your image quality will be Sharp and clear with white page</li>
+                        <li>Convert .JPEG, .PNG, .GIF files, And the file should be 2 MB or less.</li>
+                    </ul>
+                </div>
+
+            </div>
+        </div>
+
+       <div id='AdUnit2' style="max-height: 220px; margin: 10px 0; overflow: hidden;cursor: pointer;">
+        <a href='https://www.youtube.com/channel/UCapQ8VzljfmUW5OM-ynsyCQ?sub_confirmation=1&utm_source=GoOCR-v4.0&utm_medium=goOCR-Ads2&utm_campaign=goocrMobileAdUnit2'  target="_blank"> 
+            <img border="0" src="https://1.bp.blogspot.com/-tdRzhQqMwf8/Xj3DuurwdlI/AAAAAAAABPs/mEIxxkvSqQcTPzRUG9w1kKrNv00vlp7OACLcBGAsYHQ/s1600/abonzer2.jpg" style="width: 100%;">
+        </a>
+    </div>
+    </div>
+
+
+
+
+
+    <div id="OCRResultPage" style="display: none;">
+
+        <div class="top-blue-D-bar">
+            <div>
+                <i class="material-icons" style="font-size: 1.55rem;vertical-align: bottom; margin: 0 10px  0 0; ">check</i> CONVERTED - <span id="ConversionTime">N/A</span>
+            </div>
+        </div>
+
+        <div style="padding: 18px 10px; text-align: center; display: block; height: calc(100vh - 252px); min-height: calc(100vh - 752px);">
+            <textarea rows="16" cols="48" id="OCRtextBox" style="border: 0px !important; width:100%; font-size: 1rem; height:100%; color: #515254; font-family: roboto;resize: none;">				
+            </textarea>
+            <div>
+                <div id="TextCopyMsg" style="display: none; width: auto; background: rgb(245, 245, 245); padding: 12px; color: rgb(150, 149, 149); position: fixed; font-size: 0.87rem; bottom: 0px; transition: all 1.8s ease 0s;">
+                    Text Copied to the clipboard.
+                </div>
+               
+            </div>
+
+        </div>
+
+        <div  style=" padding: 10px; max-width: 320px; margin: auto; font-family: lato; font-size: 1.22rem; font-weight: 400; font-style: italic; color: #02579a; ">
+        
+            <div id="TodayConvertedFile" style='text-align: center;  font-size: 0.82rem;display: none;'>
+              <span id="TodayConvertedFilesNUM"> #NUM</span> Document Converted Today
+            </div>
+            
+            <div id='AppRateStar' style='padding: 16px 16px; margin-top: 8px; font-size: 1.5rem; display: inline-block;  cursor: pointer;' onclick='openStarRatingBox()'>
+              <span class="fa fa-star" style='color: #dddddd;'></span>      <span class="fa fa-star" style='color: #dddddd;'></span>    <span class="fa fa-star" style='color: #dddddd;'></span>       <span class="fa fa-star" style='color: #dddddd;'></span>    <span class="fa fa-star" style='color: #dddddd;'></span>
+            </div>
+            
+             <button class="button" style="font-family: lato; font-size: 1.22rem; font-weight: 400; color: rgb(2, 87, 154); padding: 16px 16px; margin-top: 8px;border-radius: 0px; border: 2px solid #fff; box-shadow: none; float:right;" onclick="CopyToClipboard()">
+                  Copy Text 
+             </button>
+                       
+        </div>   
+        
+        
+        
+        
+    </div>
+
+
+
+<div id='ratingBG'style="background: rgb(255, 255, 255); left: 0px; position: fixed; top: 0px; z-index: 11; opacity: 0.4; width: 6002px; height: 6002px;display:none;"></div>
+        
+        <div id='ocrRating-Box' style="width: 100%;position: fixed;top: 150px;z-index: 50;display:none;">
+          <div style="width: 80%;min-width: 300px; max-width: 500px;min-height: 280px;border-radius: 5px;background-color: #fff;box-shadow: 0 11px 15px 1px rgba(0,0,0,0.14), 0 4px 20px 3px rgba(0,0,0,0.12), 0 6px 7px -4px rgba(0,0,0,0.2);outline: none;overflow: visible;transition: transform .225s cubic-bezier(0.0,0.0,0.2,1);display: block;opacity: 1;margin-top: 500px;margin: auto;">
+            <div style="  padding: 16px; font-size: 1.22rem;  background: #00BCD4; color: #fff;">Review <span style=" float: right; padding: 16px; margin: -16px -16px 0px -30px; cursor: pointer; " onclick='closeStarRatingBox()'>X</span></div>
+            <div id='reviewThanks' style=" display:none; padding-top: 22px; font-size: 1.34rem; text-align: center; "></div>
+            
+            <div id="stars-rating-review" style='padding-top: 24px; text-align: center;padding-bottom: 12px;'>
+
+                <div class="StarRating-group">
+            
+                    <input disabled checked class="StarRating__input rating__input--none" name="StarRatingOCR" id="rating-none" value="0" type="radio">
+            
+                    <label aria-label="1 star" class="StarRating__label" for="rating-1"><i class="StarRating__icon StarRating__icon--star fa fa-star"></i></label>
+            
+                    <input class="StarRating__input" name="StarRatingOCR" id="rating-1" value="1" type="radio">
+            
+                    <label aria-label="2 stars" class="StarRating__label" for="rating-2"><i class="StarRating__icon StarRating__icon--star fa fa-star"></i></label>
+            
+                    <input class="StarRating__input" name="StarRatingOCR" id="rating-2" value="2" type="radio">
+            
+                    <label aria-label="3 stars" class="StarRating__label" for="rating-3"><i class="StarRating__icon StarRating__icon--star fa fa-star"></i></label>
+            
+                    <input class="StarRating__input" name="StarRatingOCR" id="rating-3" value="3" type="radio">
+            
+                    <label aria-label="4 stars" class="StarRating__label" for="rating-4"><i class="StarRating__icon StarRating__icon--star fa fa-star"></i></label>
+            
+                    <input class="StarRating__input" name="StarRatingOCR" id="rating-4" value="4" type="radio">
+            
+                    <label aria-label="5 stars" class="StarRating__label" for="rating-5"><i class="StarRating__icon StarRating__icon--star fa fa-star"></i></label>
+            
+                    <input class="StarRating__input" name="StarRatingOCR" id="rating-5" value="5" type="radio">
+            
+                </div>
+            
+              <p class="desc" style="font-family: sans-serif; font-size:0.9rem">Accuracy</p>
+              <textarea id='WriteReview' class="review_Text" maxlength="1096" placeholder="Tell others what you think about this App. Would you recommend it, and why?"></textarea>
+               <div style="/* text-align: right; padding-right: 20px; */">
+                 <div class="reviewBtn" style="margin: 0px 4px; color: #fffcfc;background: #03A9F4; width: 80%; " onclick='UploadReview();'>Submit</div>
+                 <div id='reviewProcess' style=" background: url(https://1.bp.blogspot.com/-zYnmMrsSgRc/XjnEex73wiI/AAAAAAAABOY/fA-PPsmvvaAePRYE3IwmqDXdh2dyXWJ6wCKgBGAsYHg/s320/2fd76d40df9c9cf0a1d9a90d414ce945.gif); background-repeat: no-repeat; height: 36px; background-size: 200px; display: none; background-position: center; "></div>
+               </div>
+            </div>
+
+          </div>
+        </div>
+
+
+
+
+
+    <div id="footerSpace" style="display:none; height:86px;">
+    </div>
+
+    <div id="SelectedFileBox" class="FileLoad">
+        <div class="FileTypeIMG">
+            <img id="FileImg" border="0" src="https://1.bp.blogspot.com/-YANEjjLvcu8/WkjnkfMxVXI/AAAAAAAAADY/nsBPbRHdPiIa6OL1aoe5dTriWZ1B9HkiQCLcBGAs/s1600/UnKnow.png" style="width:100%; margin-bottom: 1px;" />
+        </div>
+
+        <div class="FileDetails">
+            <div id="FileName" style="font-size: 0.89rem;color:#353535;margin: 12px 12px; text-overflow: ellipsis;overflow: hidden; max-height: 2.20rem; ">N/A</div>
+
+            <div id="FileMsg" style="width:auto; font-size: 0.60rem;color:#353535;margin: 12px 12px; text-overflow: ellipsis;overflow: hidden;">N/A</div>
+
+        </div>
+    </div>
+
+
+
+    <!--<div id="InfoMsg" class='InfoMsg' style='display:none'>
+        <span id="InfoMsgText">OCR text can now view on PC</span>
+        <span onclick="document.getElementById('InfoMsg').style.display='none'" style="padding-left:14px;curssor:pointer;float:right;"><i class="material-icons" style="font-size: 22px;">clear</i></span>
+    </div>-->
+    
+    <div id="alertMsgBox" class='alertMsgBoxStyle'>
+        <div class="alertMsgBody">
+          <span id="alertMsgText">none</span>
+          <span class="Xmsg" onclick="AlertMsgBox('close', '')"><i class="material-icons" style="font-size: 22px;">clear</i></span>
+       </div>
+   </div>
+
+ 
+</body>
+
+</html>
