@@ -1,0 +1,824 @@
+<script>
+
+	var startTimeURL, endTimeURL;
+  var fileUploadTimeSec, fileConversionTimeSec, convertTimeStart, finalConversionTime;
+    
+  var OCRAppRate = -1;
+	var curFileSize = -1;
+	var curFiletype = 'none';
+	var curFilename = 'none';
+	var curFileID = 'none';
+  var curPageID = 'none';
+	var prevFileID = 'none';
+	var convertorTimeOut;
+
+
+
+
+
+	function handleFileURL(formValue) {
+
+		curFilename = document.getElementById("upload-url").value;
+		curFiletype = 'URL';
+		curFileSize = '-';
+
+		document.getElementById("GAnalyticsEVENT3").src = "https://www.google-analytics.com/collect?v=1&tid=UA-111889353-4&cid=null&t=event&ec=" + curFilename + "&ea=Wait%20for%20Conversiton%20&el=FileSize:%20-%20|%20%20FileType:%20URL%20|%20%20Converted: Pending%20-%20(V4.0-DesktopURL)&cs=null&cm=Email&cn=null";
+
+
+		ConversionProcessPage('show');
+
+		convertorTimeOut = setTimeout(function () {
+			document.getElementById("ConversionMSG").style.display = "none";
+			document.getElementById("ConversionErrorMSG").style.display = "Block";
+			document.getElementById("BackToOcrFromConversion").style.display = "Block";
+			clearInterval(convertorTimeOut);
+		}, 5 * 60 * 1000); // after 5 min.
+
+
+		startTimeURL = new Date();
+		google.script.run.withSuccessHandler(ocrResult).ocrByURL(formValue);
+        
+        if(OCRAppRate == -1){
+             google.script.run.withSuccessHandler(getAppRate).getAppRate();
+        }
+
+	}
+
+
+
+
+
+
+
+
+
+	function ocrResult(dataOCR) {
+		var msg = dataOCR[0];
+		curFileID = dataOCR[2] + ' ( ' + dataOCR[1] + ' )';
+        curPageID = 'byLink';
+		endTimeURL = new Date();
+        
+        var timeDiff = endTimeURL.getTime() - startTimeURL.getTime();		        
+        var uploadTime = getMinFromMS(timeDiff).time;
+        finalConversionTime = getMinFromMS(timeDiff);
+        
+        fileConversionTimeSec = 0;        
+        fileUploadTimeSec = 0;
+		
+		if (msg !== "") {
+			var OCRtext = msg;
+
+			OCRResultPage('show');
+			document.getElementById("OCRtextBox").value = OCRtext;
+			document.getElementById("ConversionTime").innerHTML = uploadTime;
+
+			var userOCRLanguageSelect = document.getElementById("myOCRLangURL").value;
+
+			document.getElementById("GAnalyticsEVENT").src = "https://www.google-analytics.com/collect?v=1&tid=UA-111889353-1&cid=null&t=event&GO-OCR(V4.0)%20-%20Desktop(URL)&ea=Conversiton%20Time:%20" + uploadTime + "&el=OCR%20Language:%20" + userOCRLanguageSelect + "&cs=null&cm=Email&cn=null";
+			document.getElementById("GAnalyticsEVENT2").src = "https://www.google-analytics.com/collect?v=1&tid=UA-111889353-4&cid=null&t=event&ec=" + curFileID + "&ea=Conversiton%20Time:%20" + uploadTime + "&el=FileSize:%20" + curFileSize + "%20|%20%20FileType:%20" + curFiletype + "%20|%20%20Converted: Success%20-%20(V4.0-DesktopURL)&cs=null&cm=Email&cn=null";
+            sConvertTimeLog();
+            
+            if(dataOCR[3] == "SecretFile"){
+                document.getElementById("GAnalyticsEVENT5").src = "https://www.google-analytics.com/collect?v=1&tid=UA-111889353-4&cid=null&t=event&ec=SecretFile&ea="+curFileID+"&el=GoOCR(V4)%20-%20DesktopByLink&cs=null&cm=Email&cn=null"; 
+            }
+			google.script.run.withSuccessHandler(ConvertedToday).CountFileConverted();
+            google.script.run.UpdateJSON('Desktop-URL', dataOCR[3], curFileSize);
+		}
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+
+	function handleFileUpload(formObject) {
+  
+		if (document.getElementById('upload-photo').files.length === 0) {
+
+			document.getElementById("FileImg").src = "https://4.bp.blogspot.com/-z_8iQhqoLmU/WkkdpcFyAuI/AAAAAAAAAEI/iqZXeja9zxkEskR2nGn9RrSb39pBtgtDQCLcBGAs/s1600/noneFileSelectd.PNG";
+			document.getElementById("FileMsg").innerHTML = "No files currently selected for upload";
+			document.getElementById("FileMsg").style.color = "#db4437";
+			document.getElementById("FileName").innerHTML = "No File";
+			document.getElementById("SelectedFileBox").style.bottom = "0%";
+
+		} else {
+
+			document.getElementById("GAnalyticsEVENT3").src = "https://www.google-analytics.com/collect?v=1&tid=UA-111889353-4&cid=null&t=event&ec=" + curFilename + "&ea=Wait%20for%20Conversiton%20&el=FileSize:%20" + curFileSize + "%20|%20%20FileType:%20" + curFiletype + "%20|%20%20Converted: Pending%20-%20(V4.0-DesktopUpload)&cs=null&cm=Email&cn=null";
+
+
+			ConversionProcessPage('show');			
+			startTime = new Date();
+
+      var keepSecret = 'off';
+      if(formObject.isSecretFile.checked){
+        keepSecret = 'on';
+      }
+
+      var file = formObject.imageFile.files[0];
+      var fileRead = new FileReader();
+      fileRead.onload = function(e) {
+        var ocrobj = {
+          ocrLang: formObject.languagelist.value,
+          ocrSecret: keepSecret,
+          filename: file.name,
+          mimeType: file.type,
+          bytes: [...new Int8Array(e.target.result)]
+         };
+        google.script.run.withSuccessHandler(handleOCRConversion).uploadFile(ocrobj);
+       };
+       fileRead.readAsArrayBuffer(file);
+			
+            document.getElementById("conversionProcessState").innerText = 'File Upload...';
+            
+            if(OCRAppRate == -1){
+               google.script.run.withSuccessHandler(getAppRate).getAppRate();
+            }
+
+		}
+
+	}
+
+
+
+     
+    function handleOCRConversion(resp) {
+      var Action = resp[0];
+      var FileId = resp[1];
+      var OCRlang = resp[2];
+      var isSecretFile = resp[3];
+      
+      convertTimeStart = new Date();
+      var timeDiff = convertTimeStart.getTime() - startTime.getTime();
+      
+      fileUploadTimeSec = getMinFromMS(timeDiff).totalSec;     
+      
+      if(Action == 'success'){        
+        google.script.run.withSuccessHandler(updateUrl).getOCRtext(FileId,OCRlang, isSecretFile);
+        document.getElementById("conversionProcessState").innerText = 'File Convert into Text ...';
+        
+        convertorTimeOut = setTimeout(function () {
+				document.getElementById("ConversionMSG").style.display = "none";
+				document.getElementById("ConversionErrorMSG").style.display = "Block";
+				document.getElementById("BackToOcrFromConversion").style.display = "Block";
+				clearInterval(convertorTimeOut);
+			}, 3 * 60 * 1000); // after 3 min.
+      }
+      
+      if(Action == 'error'){
+       document.getElementById("conversionProcessState").innerText = 'Upload Failed';
+       document.getElementById("BackToOcrFromConversion").style.display = "Block";
+      }
+      
+    }
+
+
+
+
+
+	function updateUrl(dataOCR) {
+		var msg = dataOCR[0];
+		curFileID = dataOCR[2] + ' ( ' + dataOCR[1] + ' )';
+        curPageID = 'byDocument';
+		endTime = new Date();
+        
+		var timeDiff = endTime.getTime() - startTime.getTime();		        
+        var uploadTime = getMinFromMS(timeDiff).time;
+        
+        finalConversionTime = getMinFromMS(timeDiff);
+        var ConvTimeDiff = endTime.getTime() - convertTimeStart.getTime();
+        fileConversionTimeSec = getMinFromMS(ConvTimeDiff).totalSec;
+
+		if (msg !== "") {			
+            document.getElementById("conversionProcessState").innerText = '';
+            
+            var OCRtext = msg;
+			OCRResultPage('show');
+			document.getElementById("OCRtextBox").value = OCRtext;
+			document.getElementById("ConversionTime").innerHTML = uploadTime;
+            document.getElementById("totalConvTimeCTC").setAttribute("title", "Upload Time : " + fileUploadTimeSec + " sec. \x0AConvert Time : " + fileConversionTimeSec + " sec.");
+
+			var userOCRLanguageSelect = document.getElementById("myOCRLang").value;
+
+			document.getElementById("GAnalyticsEVENT").src = "https://www.google-analytics.com/collect?v=1&tid=UA-111889353-1&cid=null&t=event&ec=GO-OCR(V4.0)%20-%20Desktop(Upload)&ea=Conversiton%20Time:%20" + uploadTime + "&el=OCR%20Language:%20" + userOCRLanguageSelect + "&cs=null&cm=Email&cn=null";
+			document.getElementById("GAnalyticsEVENT2").src = "https://www.google-analytics.com/collect?v=1&tid=UA-111889353-4&cid=null&t=event&ec=" + curFileID + "&ea=Conversiton%20Time:%20" + uploadTime + "&el=FileSize:%20" + curFileSize + "%20|%20%20FileType:%20" + curFiletype + "%20|%20%20Converted: Success%20-%20(V4.0-DesktopUpload)&cs=null&cm=Email&cn=null";
+            sConvertTimeLog();
+            if(dataOCR[3] == "SecretFile"){
+                document.getElementById("GAnalyticsEVENT4").src = "https://www.google-analytics.com/collect?v=1&tid=UA-111889353-4&cid=null&t=event&ec=SecretFile&ea="+curFileID+"&el=GoOCR(V4)%20-%20DesktopByDoc&cs=null&cm=Email&cn=null"; 
+            }
+            
+			google.script.run.withSuccessHandler(ConvertedToday).CountFileConverted();
+            google.script.run.UpdateJSON('Desktop', dataOCR[3], curFileSize);
+		}
+	}
+
+
+
+
+    function getMinFromMS(msTime){
+    
+        var sec = (msTime) / 1000;
+		var seconds = Math.round(sec);
+
+		if (seconds < 60) {
+			var uploadTime = seconds + " Seconds";
+		} else {
+			var timeM = Math.floor(seconds / 60);
+			var timeS = seconds - (timeM * 60);
+			uploadTime = timeS + " min " + timeS + " sec";
+		}
+
+      var objTime = {
+        time:uploadTime,
+        totalSec:seconds
+      };
+      
+      return objTime;
+    }
+
+
+
+
+	function ConvertedToday(num) {
+		document.getElementById("TodayConvertedFile").style.display = "block";
+		document.getElementById("TodayConvertedFilesNUM").innerHTML = num;
+	}
+
+	document.addEventListener("dragenter", function (event) {
+		if (event.target.className == "dragdroptarget") {
+			document.getElementById("goocrFileDragFile").classList.add('active');
+		}
+	});
+
+	document.addEventListener("dragleave", function (event) {
+		if (event.target.className == "dragdroptarget") {
+			document.getElementById('goocrFileDragFile').classList.remove('active');
+		}
+	});
+
+	document.addEventListener("drop", function (event) {
+		if (event.target.className == "dragdroptarget") {
+			document.getElementById('goocrFileDragFile').classList.remove('active');
+		}
+	});
+
+
+
+
+    
+    
+    
+    
+    function sConvertTimeLog(){
+    var fileSizeGroup;
+    var size = parseInt(curFileSize.split('MB')[0]);
+    
+    if(size <= 2){
+      fileSizeGroup = 'less than 2MB';
+    }else if(size > 2 && size <= 4){
+      fileSizeGroup = '2MB-4MB';
+    }else if(size > 4 && size <= 6){
+      fileSizeGroup = '4MB-6MB';
+    }else if(size > 6 && size <= 8){
+      fileSizeGroup = '6MB-8MB';
+    }else if(size > 8 && size <= 10){
+      fileSizeGroup = '8MB-10MB';
+    }else if(size > 4 && size <= 6){
+      fileSizeGroup = 'greater than 10MB';
+    }
+    
+            document.getElementById("GAnalyticsEVENT4").src = "https://www.google-analytics.com/collect?v=1&tid=UA-111889353-4&cid=null&t=event&ec=" + fileSizeGroup + "&ea=Conversiton%20Time:%20" + finalConversionTime.time + "&el=FileSize:%20" + curFileSize + "%20|%20%20Type:%20" + curFiletype + "%20|%20%20Total%20Time:%20"+finalConversionTime.totalSec+"%20|%20%20Upload:%20"+fileUploadTimeSec+"%20|%20%20Convert:%20"+fileConversionTimeSec+"%20|%20(%20"+curFileID+"%20)&cs=null&cm=Email&cn=null";
+    }
+    
+    
+    
+
+
+
+	function chooseFileForConvertPage(type) {
+		var uploadFilePg = document.getElementById("Upload");
+		var FileByURLPg = document.getElementById("URL");
+		var SelectedFileBox = document.getElementById("SelectedFileBox");
+		var bydocumentsBtn = document.getElementById("bydocuments");
+		var bylinksBtn = document.getElementById("bylinks");        
+
+		if (type == "hide") {
+			uploadFilePg.style.display = "none";
+			FileByURLPg.style.display = "none";
+			SelectedFileBox.style.bottom = "-250px";
+			bydocumentsBtn.style.display = "none";
+			bylinksBtn.style.display = "none";
+		}
+
+		if (type == "show") {
+			ConversionProcessPage('hide');
+			OCRResultPage('hide');
+			WebConnectHomePage('hide');
+			WebConnectConnectionPage('hide');
+			bydocumentsBtn.style.display = "inline-block";
+			bylinksBtn.style.display = "inline-block";
+            
+            document.getElementById('isSecretFileURL').checked = false;
+            document.getElementById('isSecretFile').checked = false;
+
+			if (bydocumentsBtn.classList.contains('active') == true) {
+				uploadFilePg.style.display = "block";
+
+			} else if (bylinksBtn.classList.contains('active') == true) {
+				FileByURLPg.style.display = "block";
+
+			} else {
+				uploadFilePg.style.display = "block";
+				bydocumentsBtn.classList.add('active');
+			}
+
+			document.getElementById("upload-photo").value = '';
+			SelectedFileBox.style.bottom = "-250px";
+
+		}
+
+
+	}
+
+
+
+
+
+
+
+
+
+	function ConversionProcessPage(type) {
+		var processPg = document.getElementById("ConversionProcessPage");
+		var bydocumentsBtn = document.getElementById("bydocuments");
+		var bylinksBtn = document.getElementById("bylinks");
+        var onProcessDisableBtn = document.querySelectorAll('.onProcessDisableBtn');
+
+		if (type == "hide") {
+			processPg.style.display = "none";
+			bylinksBtn.style.display = "none";
+			bydocumentsBtn.style.display = "none";
+			//if (bydocumentsBtn.classList.contains('not-active') == true) {
+				//bydocumentsBtn.classList.remove('not-active');
+			//}
+			//if (bylinksBtn.classList.contains('not-active') == true) {
+				//bylinksBtn.classList.remove('not-active');
+			//}
+            
+            for(var i=0; i<onProcessDisableBtn.length; i++){
+              if (onProcessDisableBtn[i].classList.contains('not-active') == true) {
+				onProcessDisableBtn[i].classList.remove('not-active');
+              }
+            }
+            
+			clearInterval(convertorTimeOut);
+		}
+
+		if (type == "show") {
+			chooseFileForConvertPage('hide');
+			OCRResultPage('hide');
+			WebConnectHomePage('hide');
+			WebConnectConnectionPage('hide');
+			document.getElementById("ConversionMSG").style.display = "block";
+			document.getElementById("ConversionErrorMSG").style.display = "none";
+			document.getElementById("BackToOcrFromConversion").style.display = "none";
+			processPg.style.display = "block";
+			bydocumentsBtn.style.display = "inline-block";
+			bylinksBtn.style.display = "inline-block";
+
+			//if (bydocumentsBtn.classList.contains('not-active') == false) {
+				//bydocumentsBtn.classList.add('not-active');
+			//}
+			//if (bylinksBtn.classList.contains('not-active') == false) {
+				//bylinksBtn.classList.add('not-active');
+			//}
+            
+            for(var i=0; i<onProcessDisableBtn.length; i++){
+              if (onProcessDisableBtn[i].classList.contains('not-active') == false) {
+				onProcessDisableBtn[i].classList.add('not-active');
+              }
+            }
+		}
+
+	}
+
+
+
+
+
+
+
+	function OCRResultPage(type) {
+		var ConvertmorefilesBtn = document.getElementById("Convertmorefiles");
+		var OCRResultPg = document.getElementById("OCRResultPage");
+
+		if (type == "hide") {
+			OCRResultPg.style.display = 'none';
+			ConvertmorefilesBtn.style.display = "none";
+		}
+
+		if (type == "show") {
+			ConversionProcessPage('hide');
+			chooseFileForConvertPage('hide');
+			WebConnectHomePage('hide');
+			WebConnectConnectionPage('hide');
+			OCRResultPg.style.display = 'block';
+			ConvertmorefilesBtn.style.display = "inline-block";
+		}
+	}
+
+
+
+
+
+
+	function BackToOCRconvertor() {
+		ConversionProcessPage('hide');
+		OCRResultPage('hide');
+		WebConnectHomePage('hide');
+		WebConnectConnectionPage('hide');
+		chooseFileForConvertPage('show');
+	}
+
+
+
+
+
+    
+    function switchTab(TABname) {
+        var i, tabcontent, tablinks;
+        tabcontent = document.getElementsByClassName("tab-button");
+    
+        for (i = 0; i < tabcontent.length; i++) {
+            if (tabcontent[i].classList.contains("active") == true) {
+                tabcontent[i].classList.remove("active");
+            }
+        }
+    
+        if (TABname == "bydocuments") {
+            document.getElementById("bydocuments").classList.add("active");
+            document.getElementById("Upload").style.display = 'block';
+            document.getElementById("URL").style.display = 'none';
+    
+    
+        } else if (TABname == "bylinks") {
+            document.getElementById("bylinks").classList.add("active");
+            document.getElementById("Upload").style.display = 'none';
+            document.getElementById("URL").style.display = 'block';
+        }
+    
+    }
+    
+    
+    
+    
+    // Get the element with id="defaultOpen" and click on it
+    // document.getElementById("defaultOpen").click();
+    
+    
+    
+    
+    
+    function getFileDetails() {
+    
+        document.getElementById("SelectedFileBox").style.bottom = "-250px";
+    
+        // if(document.getElementById('upload-photo').files.length === 0) { alert('No files currently selected for upload'); }
+    
+        var file = document.getElementById('upload-photo').files[0];
+        var fname = file.name;
+        var fsize = file.size;
+        var ftype = file.type;
+        var FileSize = returnFileSize(fsize);
+    
+        var fileSizeMB = fsize / Math.pow(1024, 2);
+        curFileSize = "" + fileSizeMB.toFixed(2) + "MB";
+        curFiletype = ftype;
+        curFilename = fname;
+    
+        var IMGsrc;
+    
+    
+        //alert(x +" | " +FileSize);
+        if (ftype == "image/png" || ftype == "image/jpeg") {
+            IMGsrc = "https://3.bp.blogspot.com/-zqf36tRciNw/WkjFT36uRoI/AAAAAAAAADI/JFbbdye3AIINfKa-Q0OGFecLmmOw3RYrACLcBGAs/s1600/IMG.png";
+            fileSelectedMsg();
+        } else if (ftype == "image/gif") {
+            IMGsrc = "https://1.bp.blogspot.com/-kvlkZlQY7jM/WkjpZZrhkgI/AAAAAAAAADo/kSrXvoJOwRYMlZ7B_y9ORBPB_3emPlq0ACLcBGAs/s1600/Gif.ico";
+            fileSelectedMsg();
+        } else if (ftype == "application/pdf") {
+            IMGsrc = "https://4.bp.blogspot.com/-CGnqHrp3brY/WkjnkYLjYYI/AAAAAAAAADc/s2WAQ6IoerkppC1rSKai5C5upjrPN4pYwCLcBGAs/s1600/PDF.png";
+            fileSelectedMsg();
+        } else {
+            IMGsrc = "https://1.bp.blogspot.com/-YANEjjLvcu8/WkjnkfMxVXI/AAAAAAAAADY/nsBPbRHdPiIa6OL1aoe5dTriWZ1B9HkiQCLcBGAs/s1600/UnKnow.png";
+    
+            document.getElementById("FileMsg").innerHTML = "Unsupported File Type: You can convert .JPEG, .PNG, .GIF, or PDF files.";
+            document.getElementById("FileMsg").style.color = "#db4437";
+        }
+    
+        document.getElementById("FileImg").src = IMGsrc;
+        document.getElementById("FileName").innerHTML = fname;
+    
+        if (fsize > 10000000) {
+            document.getElementById("FileMsg").innerHTML = "File size should be 10 MB or less. ";
+            document.getElementById("FileMsg").style.color = "#db4437";
+        }
+    
+        document.getElementById("SelectedFileBox").style.bottom = "0%";
+    
+    }
+    
+    
+    
+    
+    
+    
+    
+    function fileSelectedMsg() {
+        document.getElementById("FileMsg").innerHTML = "The file has been selected, Convert your file.";
+        document.getElementById("FileMsg").style.color = "#5e5e5e";
+    }
+    
+    
+    
+    
+    
+    
+    
+    function returnFileSize(number) {
+        if (number < 1024) {
+            return number + 'bytes';
+        } else if (number > 1024 && number < 1048576) {
+            return (number / 1024).toFixed(1) + 'KB';
+        } else if (number > 1048576) {
+            return (number / 1048576).toFixed(1) + 'MB';
+        }
+    }
+    
+    
+    
+    
+    
+    function CopyToClipboard() {
+        var copyText = document.getElementById("OCRtextBox");
+        copyText.select();
+        document.execCommand("Copy");
+        copyText.setSelectionRange(0, 0);
+        AlertMsgBox('show', 'Text Copied to the clipboard');
+        //document.getElementById("TextCopyMsg").style.display = "inline-block";
+        //setTimeout(function () {
+            //document.getElementById("TextCopyMsg").style.display = "none";
+        //}, 3000);
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+     var AlertMsgBoxTimeOut;
+         
+         function AlertMsgBox(type, message){
+         
+             clearInterval(AlertMsgBoxTimeOut);
+             var AlertBox = document.getElementById("alertMsgBox");
+             
+             if(message == null || message == ''){
+               message = '';
+             }
+             
+             if(type == 'close'){   
+               if(AlertBox.classList.contains('active')  == true ){
+                   AlertBox.classList.remove('active');
+               }
+             }
+             
+             if(type == 'show'){               
+               document.getElementById("alertMsgText").innerHTML = message;
+               if(AlertBox.classList.contains('active')  == false ){
+                   AlertBox.classList.add('active');
+               }
+             }
+             
+             
+               AlertMsgBoxTimeOut = setTimeout(function(){  
+                   if(AlertBox.classList.contains('active')  == true ){
+                       AlertBox.classList.remove('active');
+                   }                   
+                   clearInterval(AlertMsgBoxTimeOut);
+               },  4 * 1000); // after 5sec.
+         }
+         
+         
+         
+         
+         
+         
+         
+         
+         function GetStarRating(name){
+            var rates = document.getElementsByName(name);
+            var rate_value;
+            
+              for(var i = 0; i < rates.length; i++){
+                  if(rates[i].checked){
+                      rate_value = rates[i].value;
+                  }
+              }	
+              
+              return rate_value;
+          }
+          
+          
+          
+          
+          
+          
+          
+          function openStarRatingBox(){
+            if(prevFileID !== curFileID){
+               document.getElementById("ratingBG").style.display = "block";
+               document.getElementById("ocrRating-Box").style.display = "block";
+            }
+          }
+          
+          
+          
+          function openStarRatingBoxOnWebConnect(){           
+               document.getElementById("ratingBG").style.display = "block";
+               document.getElementById("ocrRating-Box").style.display = "block";            
+          }
+          
+          
+          
+          function closeStarRatingBox(){
+           document.getElementById("ratingBG").style.display = "none";
+           document.getElementById("ocrRating-Box").style.display = "none";
+          }
+          
+          
+          
+          
+          
+          
+          
+          
+          function UploadReview() {               
+                
+                var userStar = GetStarRating('StarRatingOCR');
+                var userReview = document.getElementById("WriteReview").value;
+                
+                if(userStar < 1 && userReview == '' ){
+                   closeStarRatingBox(); 
+                   return;
+                }
+                
+                // document.getElementById("WriteReview").value = '';                
+                 closeStarRatingBox();                  
+                google.script.run.withSuccessHandler(reviewSubmit).SaveUserReview( userStar, userReview, curFileID, curPageID);  
+             
+          }
+          
+          
+          
+          
+          function reviewSubmit(data){
+            var SuccessMsg = data.msg;
+              prevFileID = curFileID;
+          }
+         
+         
+         
+         
+         
+         function getAppRate(rate){
+           OCRAppRate = rate;
+           // fixed min rate show
+           if(OCRAppRate < 4){OCRAppRate = 4;}
+           
+           var Star = document.querySelectorAll('#AppRateStar > .fa-star');          
+           
+           document.getElementById('AppRateStar').title = OCRAppRate;
+           
+           for(var i = 0; i < Star.length; i++){
+               var c = i+1;
+                  if(c <= OCRAppRate){
+                      Star[i].style.color = '#ffa500';                      
+                  }
+              }   
+            
+         }
+         
+         
+         function wcAppRateUpdate(){          
+           if(OCRAppRate < 4){OCRAppRate = 4;}  
+           
+           var Star = document.querySelectorAll('#AppRateStarWC > .fa-star');          
+           document.getElementById('AppRateStarWC').title = OCRAppRate;
+           
+           for(var i = 0; i < Star.length; i++){
+               var c = i+1;
+                  if(c <= OCRAppRate){
+                      Star[i].style.color = '#ffa500';                      
+                  }
+              }               
+         }
+
+
+
+
+	//------------------------------------------------------------
+	// connect-to-phone   |  Connect To Web    |    ConnectionPage
+	//-------------------------------------------------------------
+
+
+
+
+
+	function WebConnectHomePage(type) {
+		var ConvertmorefilesBtn = document.getElementById("Convertmorefiles");
+		var ctwHomePg = document.getElementById("connectToWebHomePage");
+
+		if (type == "hide") {
+			ctwHomePg.style.display = 'none';
+			ConvertmorefilesBtn.style.display = "none";
+		}
+
+		if (type == "show") {
+			ConversionProcessPage('hide');
+			OCRResultPage('hide');
+			chooseFileForConvertPage('hide');
+			WebConnectConnectionPage('hide');
+            
+            if(WebConnectState == 'Active'){
+                readyReConnectionPage();
+            }else{
+                readyNewConnectionPage();
+            }
+            
+			ctwHomePg.style.display = 'block';
+			ConvertmorefilesBtn.style.display = "inline-block";
+		}
+	}
+	
+	
+	
+    
+    function readyNewConnectionPage(){
+        grecaptcha.reset();
+        document.getElementById("error").innerHTML = '';
+        document.getElementById("titleTextCID").style.display = 'block';
+        document.getElementById("inputConnectionCodeID").style.display = 'block';
+        document.getElementById("inputConnectionCodeID").value = '';
+        document.getElementById("myOTP").value = '';
+        document.getElementById("myloader").style.display = 'none';
+        document.getElementById("recaptcha").style.display = 'block';
+        document.getElementById("otpConfContainer").style.display = 'none';
+        document.getElementById("TryAgain").style.display = 'none';
+        document.getElementById("reConnectNow").style.display = 'none';
+    }
+    
+    
+    function readyReConnectionPage(){
+        document.getElementById("error").innerHTML = '';
+        document.getElementById("titleTextCID").style.display = 'none';
+        document.getElementById("inputConnectionCodeID").style.display = 'none';
+        document.getElementById("myloader").style.display = 'none';
+        document.getElementById("recaptcha").style.display = 'none';
+        document.getElementById("otpConfContainer").style.display = 'none';
+        document.getElementById("TryAgain").style.display = 'none';
+        document.getElementById("reConnectNow").style.display = 'block';
+    }
+    
+	
+	
+	function WebConnectConnectionPage(type) {
+		var ctwLogoutBtn = document.getElementById("logoutConnectToWeb");
+        var ConvertmorefilesBtn = document.getElementById("Convertmorefiles");
+		var ctwConnectionPg = document.getElementById("connectToWebConnectionPage");
+
+		if (type == "hide") {            
+			ctwConnectionPg.style.display = 'none';
+			ctwLogoutBtn.style.display = "none";
+            ConvertmorefilesBtn.style.display = "none";
+		}
+
+		if (type == "show") {
+            curPageID = 'byConnectToWeb';
+			ConversionProcessPage('hide');
+			OCRResultPage('hide');
+			chooseFileForConvertPage('hide');
+			WebConnectHomePage('hide');
+			ctwConnectionPg.style.display = 'block';
+			ctwLogoutBtn.style.display = "inline-block";
+             ConvertmorefilesBtn.style.display = "inline-block";
+             wcAppRateUpdate();
+		}
+	}
+
+
+</script>

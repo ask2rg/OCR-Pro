@@ -1,0 +1,316 @@
+<script>
+	var startTimeURL, endTimeURL, ConnectionLog, OTPSent, OTPverify;
+    var WebConnectState = 'In-Active';
+
+
+	function ReloadPage() {
+		//document.getElementById("ReloadLink").click();
+		//google.script.host.close();
+        ConnectionLog = "not-Set";
+        WebConnectState = 'In-Active';
+        OTPSent = "notSet";
+        OTPverify="notSet";
+        WebConnectHomePage('show');
+	}
+
+
+
+  
+
+	function handleClearText() {
+		document.getElementById("checkNotConncted").style.display = "none";
+		document.getElementById("checkConncted").style.display = "none";
+		document.getElementById("waiting").style.display = "block";
+
+		google.script.run.withSuccessHandler(ReloadOCRtxt).ClearText(ConnectionLog);
+
+	}
+
+
+
+
+
+
+
+	function handleReload() {
+		document.getElementById("checkNotConncted").style.display = "none";
+		document.getElementById("checkConncted").style.display = "none";
+		document.getElementById("waiting").style.display = "block";
+
+		google.script.run.withSuccessHandler(ReloadOCRtxt).Reload(ConnectionLog);
+
+	}
+
+
+
+
+
+
+
+	function ReloadOCRtxt(msg) {
+		var MsgText = msg[1];
+
+		document.getElementById("checkNotConncted").style.display = "none";
+		document.getElementById("checkConncted").style.display = "none";
+		document.getElementById("waiting").style.display = "none";
+
+		if (msg[0] == "Failed") {
+			document.getElementById("checkNotConncted").style.display = "block";
+			document.getElementById("NotConnectedError").innerHTML = MsgText;
+			document.getElementById("TryAgain").style.display = "block";
+		}
+
+		if (msg[0] == "Success") {
+			document.getElementById("checkConncted").style.display = "block";
+			if (MsgText !== "") {
+				document.getElementById("connectOCRtextBox").value = MsgText;
+			}
+			if (MsgText == "All Text has Cleared.") {
+				document.getElementById("connectOCRtextBox").value = "";
+			}
+
+		}
+
+	}
+
+
+
+
+
+	function handleLogout() {
+		document.getElementById("checkNotConncted").style.display = "none";
+		document.getElementById("checkConncted").style.display = "none";
+		document.getElementById("waiting").style.display = "block";
+        document.getElementById("reConnectNow").style.display = "none";
+        WebConnectState = 'In-Active';
+		google.script.run.withSuccessHandler(Logout).LogOut(ConnectionLog);
+	}
+
+
+
+	function Logout() {
+		ReloadPage();
+
+	}
+
+
+
+
+	function handleOTP() {
+
+		var userOTP = document.getElementById("myOTP").value;
+		if (userOTP.length == 5) {
+
+			google.script.run.withSuccessHandler(makeConnection).validateOTP(userOTP, ConnectionLog);
+			OTPverify = "wait";
+
+			document.getElementById("error").innerHTML = "";
+			//document.getElementById("recaptcha").style.display = "none";
+			//document.getElementById("submitOTP").style.display = "none";
+			document.getElementById("myloader").style.display = "block";
+			document.getElementById("otpConfContainer").style.display = "none";
+
+			setTimeout(function () {
+				if (OTPverify == "wait") {
+					document.getElementById("error").innerHTML = "Oops! Something went wrong. please refresh the page and try again.";
+					document.getElementById("myloader").style.display = "none";
+				}
+			}, 2 * 60 * 1000); // after 2 min.
+
+
+		} else {
+			document.getElementById("error").innerHTML = "Please enter your five digit OTP.";
+		}
+
+
+	}
+
+
+
+
+
+
+
+
+
+	function makeConnection(modeMsgText) {
+
+		OTPverify = "Success";
+		document.getElementById("myloader").style.display = "none";
+
+		var mode = modeMsgText[0];
+		var MsgText = modeMsgText[1];
+
+		if (mode == "Failed") {
+			document.getElementById("error").innerHTML = MsgText;
+			document.getElementById("error").style.display = "block";
+			document.getElementById("TryAgain").style.display = "block";
+		}
+
+		if (mode == "Success") {
+            document.getElementById("GAnalyticsEVENT").src = "https://www.google-analytics.com/collect?v=1&tid=UA-111889353-1&cid=null&t=event&ec=GO-OCR(V4.0)%20-%20ConnectToWeb&ea=connectionID%20-%20 " + cclog + "&el=connect to web&cs=null&cm=Email&cn=null";
+			
+			if (MsgText !== "") {
+				var OCRtext = MsgText;
+                WebConnectConnectionPage('show');
+                WebConnectState = 'Active';
+                document.getElementById("reConnectNow").style.display = "block";
+				document.getElementById("reloadConnection").style.display = "block";
+				document.getElementById("connectOCRtextBox").value = OCRtext;
+				document.getElementById("checkNotConncted").style.display = "none";
+				document.getElementById("checkConncted").style.display = "block";
+				document.getElementById("waiting").style.display = "none";
+			}
+		}
+
+	}
+    
+    
+    
+    
+    
+    
+
+
+
+
+
+    function recaptchaCallback() {
+		handleConnectionID();
+	};
+
+
+
+
+var cclog;
+
+	function handleConnectionID() {
+
+		var code = document.getElementById("inputConnectionCodeID").value;
+		if (code.length == 5) {
+            var getForm = document.getElementById('connectToWebForm');
+            cclog = code;
+			OTPSent = "wait";
+			google.script.run.withSuccessHandler(OTPVerificationPage).ConnectionCode(getForm);
+
+			startTimeURL = new Date();
+			document.getElementById("error").innerHTML = "";
+			document.getElementById("recaptcha").style.display = "none";
+			//document.getElementById("submitBtn").style.display = "none";
+			document.getElementById("myloader").style.display = "block";
+			document.getElementById("inputConnectionCodeID").style.display = "none";
+
+			setTimeout(function () {
+				if (OTPSent == "wait") {
+					document.getElementById("error").innerHTML = "Oops! Something went wrong. please refresh the page and try again.";
+					document.getElementById("myloader").style.display = "none";
+				}
+			}, 2 * 60 * 1000); // after 2 min.
+
+
+		} else {
+			document.getElementById("error").innerHTML = "Please enter a valid connection ID";
+            grecaptcha.reset();
+		}
+
+
+	}
+
+
+
+
+
+
+
+	function OTPVerificationPage(msg) {
+
+		document.getElementById("myloader").style.display = "none";
+
+		if (msg == "Oops! Something went wrong. Please try again later.") {
+			document.getElementById("error").innerHTML = "Oops! Something went wrong. Please try again later.";
+			document.getElementById("TryAgain").style.display = "block";
+            
+		} else if(msg == 'Invalid captcha please try again.'){
+          document.getElementById("error").innerHTML = "Invalid captcha please try again.";
+          
+			document.getElementById("recaptcha").style.display = "block";
+			// document.getElementById("submitBtn").style.display = "block";
+			document.getElementById("myloader").style.display = "none";
+			document.getElementById("inputConnectionCodeID").style.display = "block";
+            
+        }else if (msg !== "") {
+        
+            OTPSent = "Success";
+			ConnectionLog = msg;
+			document.getElementById("titleTextCID").style.display = "none";
+            document.getElementById("otpConfContainer").style.display = "block";
+			//document.getElementById("submitOTP").style.display = "inline-block";
+			document.getElementById("error").innerHTML = "";
+
+		}
+	}
+
+
+
+
+
+
+	//function HideInitialPage() {
+		//WebConnectHomePage('hide');
+	//} 
+    
+    
+    
+
+
+
+	function ctwCopyToClipboard() {
+		var copyText = document.getElementById("connectOCRtextBox");
+		copyText.select();
+		document.execCommand("Copy");
+		copyText.setSelectionRange(0, 0);
+        AlertMsgBox('show', 'Text Copied to the clipboard');
+		//document.getElementById("connectTextCopyMsg").style.display = "inline-block";
+		//setTimeout(function () {
+		//	document.getElementById("connectTextCopyMsg").style.display = "none";
+		//}, 3000);
+	}
+
+
+
+
+
+	// **********  Apply filter to all inputs with data-filter:   ******************
+
+	// Apply filter to all inputs with data-filter:
+	var inputs = document.querySelectorAll('input[data-filter]');
+
+	for (var i = 0; i < inputs.length; i++) {
+		var input = inputs[i];
+		var state = {
+			value: input.value,
+			start: input.selectionStart,
+			end: input.selectionEnd,
+			pattern: RegExp('^' + input.dataset.filter + '$')
+		};
+
+		input.addEventListener('input', function (event) {
+			if (state.pattern.test(input.value)) {
+				state.value = input.value;
+			} else {
+				input.value = state.value;
+				input.setSelectionRange(state.start, state.end);
+			}
+		});
+
+		input.addEventListener('keydown', function (event) {
+			state.start = input.selectionStart;
+			state.end = input.selectionEnd;
+		});
+	} 
+
+
+
+
+</script>
+
