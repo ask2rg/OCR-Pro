@@ -40,6 +40,7 @@ Let's Try: [GoOCR Pro For Mobile](https://goocr.blogspot.com/?p=App&app=mobile&u
 
 
 ### Connect to web ###
+![GoOCR - Connect to web](https://1.bp.blogspot.com/-2q8cjH9eCmc/YDazwGNDwVI/AAAAAAAACyc/tVchCN0SorwN3SfYWIgAf-ZsONXdS2tHgCLcBGAsYHQ/s1576/goocrwc.PNG" GoOCR - Desktop App with Connect to web")
 Connect your mobile to take photos or upload files, and get editable text on your PC.
 
 A large number of OCR apps are available for desktop and mobile. But I could not find any app that provides "connect to web" feature. "Connect to the web" is a feature that allows you to connect your phone to a computer so that you can input from mobile and get output on your computer screen. With GoOCR you can use your phone as a portable OCR scanner for computer.
