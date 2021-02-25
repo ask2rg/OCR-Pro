@@ -359,7 +359,7 @@ function ConnectionCode(formObj) {
 
 
 
-var secret_key = "6LcAL2cUAAAAAKH7vPqeAMnbzf3E7ImwjMJ2lQeV";  
+var secret_key = "6LcXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXwjMJ2lQeV";  
 
         
 function verifyCaptcha(response){
